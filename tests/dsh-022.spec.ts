@@ -19,7 +19,7 @@ it('reproduces the released 0.3.4-rc.2 refusal after a Harness 0.2.2 update', ()
 it('admits the bundle on DSH 0.2.2-rc.1 without a compatibility exemption', () => {
   const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
   expect(evaluatePluginCompatibility(manifest, {}, '0.2.2-rc.1')).toBeUndefined()
-  for (const version of ['0.2.1-rc.1', '0.2.1-rc.2', '0.2.2-rc.1.1', '0.2.2-rc.3', '0.2.2']) {
+  for (const version of ['0.2.1-rc.1', '0.2.1-rc.2', '0.2.2-rc.1.1', '0.2.2-rc.4', '0.2.2']) {
     expect(evaluatePluginCompatibility(manifest, {}, version)?.exempted).toBe(false)
   }
 })
@@ -63,4 +63,15 @@ it('admits the verified DSH 0.2.2-rc.2 graph without a compatibility exemption',
   expect(isCodexNativeReplayRuntimeCompatible({
     dshLlm: '0.2.2-rc.2', dshPiAi: '0.2.2-rc.2', piAi: '1.3.0',
   })).toBe(true)
+})
+
+it('admits coherent DSH rc.3 and rejects a mixed rc.2 graph', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+  expect(evaluatePluginCompatibility(manifest, {}, '0.2.2-rc.3')).toBeUndefined()
+  expect(isCodexNativeReplayRuntimeCompatible({
+    dshLlm: '0.2.2-rc.3', dshPiAi: '0.2.2-rc.3', piAi: '1.3.0',
+  })).toBe(true)
+  expect(isCodexNativeReplayRuntimeCompatible({
+    dshLlm: '0.2.2-rc.3', dshPiAi: '0.2.2-rc.2', piAi: '1.3.0',
+  })).toBe(false)
 })

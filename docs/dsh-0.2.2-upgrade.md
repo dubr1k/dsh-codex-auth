@@ -3,7 +3,7 @@
 This candidate targets the coherent DSH `0.2.2-rc.1` graph, Cordis `4.1.0`,
 Schemastery `3.19.0`, and pi-ai `1.3.0`. The official Harness source tag is
 [`dsh-v0.2.2-rc.1`](https://github.com/deepseek-ai/deepseek-harness/tree/66491b05e3f05ad35bcdd4f6cd7ed26041d9e3db).
-The proposed plugin version is `0.3.4-rc.3`; opening or merging this change does
+The proposed plugin version is `0.3.4-rc.4`; opening or merging this change does
 not itself publish an npm release or move a dist-tag.
 
 ## Why the released plugin stops loading
@@ -53,7 +53,7 @@ For a development build:
 pnpm install --frozen-lockfile
 pnpm run check
 pnpm pack --pack-destination /absolute/path/to/artifacts
-dsh plugin --profile desktop add /absolute/path/to/artifacts/dsh-codex-auth-0.3.4-rc.3.tgz
+dsh plugin --profile desktop add /absolute/path/to/artifacts/dsh-codex-auth-0.3.4-rc.4.tgz
 ```
 
 The `desktop` example targets the installed Electron application's profile;
@@ -147,3 +147,5 @@ The candidate admits coherent 0.2.2-rc.1 and 0.2.2-rc.2 graphs, each with pi-ai 
 DSH rc.2 limits `LlmError` to its declared failure codes. The plugin's disabled credential-persistence operation uses the shared `HarnessError` with its existing code. DSH rc.2 also rebuilds addition-only tool declarations after an empty initial set or removals; deferred-history tests use a nonempty initial tool set to keep testing genuine in-history additions. This does not loosen Native checkpoint eligibility or rewrite saved conversations.
 
 The rc.2 qualification passed 508 unit tests, package smoke checks, both TypeScript programs and lint. The [rc.2 live report](codex-transport-verification-rc2-2026-11-12.json) repeats all seven enabled models with Long Context off and on: 14 cases and 70 successful HTTP requests, including tool-result replay, continuation and automatic Basic compaction. Compaction uses reduced isolated thresholds; this does not certify saturation at the advertised production window or rule out unrelated backend failures.
+
+Coherent DSH 0.2.2-rc.3 with pi-ai 1.3.0 is admitted by this candidate; mixed RC graphs and unverified rc.4 remain refused.

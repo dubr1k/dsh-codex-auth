@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4-rc.4]
+
+- Admit coherent DSH 0.2.2-rc.3 with pi-ai 1.3.0, preserving rc.1/rc.2 support and rejection of mixed or future runtime versions.
+
 ## Unreleased
 
 - Qualify coherent DSH 0.2.2-rc.2 with pi-ai 1.3.0 while retaining verified rc.1 admission and rejection of mixed/future graphs. Update the development/source baseline and pnpm toolchain, use the shared HarnessError for the custom credential-persistence failure, and retain genuine deferred-tool-history coverage under rc.2 declaration rebasing.
