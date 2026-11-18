@@ -18,12 +18,19 @@ capacity must not be inferred from a public API model's total-context number.
   temperature is unsupported with active reasoning. Public API none support
   for Sol/Luna is not evidence of a working Codex OAuth Off option.
 
+- The Codex CLI 0.170.0 account catalog reports 272,000 standard context for
+  GPT-6.2 Astra and 500,000 for GPT-6.2 Sol, with an 872,000 maximum and low
+  default effort for both. The
+  [Astra](https://developers.openai.com/api/docs/models/gpt-6.2-astra) and
+  [Sol](https://developers.openai.com/api/docs/models/gpt-6.2-sol) API descriptors
+  supply the 128,000 output limit and public API cost estimates.
+
 ## Policy
 
 Missing GPT-6 descriptors use the matching GPT-5.6 transport template. The
 plugin changes explicit model fields only and keeps every existing provider
 descriptor. The long-context opt-in changes only contextWindow to 872K for every
-supported GPT-5.6/6/6.1 model, matching the current Codex OAuth catalog maximum. Turning the
+supported GPT-5.6 and GPT-6 family model, matching the current Codex OAuth catalog maximum. Turning the
 setting off returns the original provider capacity; source objects are never
 mutated. The setting is a local compaction budget, not a backend entitlement.
 
@@ -45,12 +52,12 @@ permission check and does not alter authentication, Search or Image settings.
 
 Fallback reasoning maps explicitly mark Off unsupported with null. DSH minimal
 is a compatibility alias for low. Omitting an effort is not equivalent to none;
-the adapter explicitly supplies low for an unspecified GPT-6.1 Sol request.
+the adapter supplies low for an unspecified GPT-6.1 Sol, GPT-6.2 Astra, or GPT-6.2 Sol request.
 Explicit efforts remain unchanged. Ultra is a Codex orchestration mode and is
 not sent as a raw wire effort. Installed provider descriptors retain their own
 reasoning metadata. The pinned pi-ai 1.1.0 catalog supplies GPT-6 Sol/Luna
 with `off: "none"`; those installed descriptors therefore advertise Off and
-send explicit none. Only missing-model fallback descriptors reject Off. Temperature is rejected for the known GPT-6/6.1 models
+send explicit none. Only missing-model fallback descriptors reject Off. Temperature is rejected for the known GPT-6 family models
 before authentication, regardless of direct or prepared call entry point.
 
 ## Verification boundary

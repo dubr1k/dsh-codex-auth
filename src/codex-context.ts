@@ -6,7 +6,7 @@ import z from '@deepseek-ai/schemastery'
 export const CODEX_LLM_SETTINGS_NAMESPACE = 'codex-llm'
 /** Conservative Codex default that avoids automatic long-context usage. */
 export const CODEX_STANDARD_CONTEXT_WINDOW = 272_000
-/** Shared Codex OAuth opt-in maximum for the supported GPT-5.6/6/6.1 models. */
+/** Shared Codex OAuth opt-in maximum for the supported GPT-5.6 and GPT-6 family models. */
 export const CODEX_LONG_CONTEXT_WINDOW = 872_000
 /** GPT-6 Codex OAuth maximum, distinct from public API total-context limits. */
 export const CODEX_GPT_6_LONG_CONTEXT_WINDOW = CODEX_LONG_CONTEXT_WINDOW
@@ -15,6 +15,8 @@ export const CODEX_GPT_6_ASTRA_MODEL_ID = 'gpt-6-astra'
 export const CODEX_GPT_6_SOL_MODEL_ID = 'gpt-6-sol'
 export const CODEX_GPT_6_LUNA_MODEL_ID = 'gpt-6-luna'
 export const CODEX_GPT_6_1_SOL_MODEL_ID = 'gpt-6.1-sol'
+export const CODEX_GPT_6_2_ASTRA_MODEL_ID = 'gpt-6.2-astra'
+export const CODEX_GPT_6_2_SOL_MODEL_ID = 'gpt-6.2-sol'
 
 /** Models with a model-specific opt-in long-context budget. */
 export const CODEX_LONG_CONTEXT_MODEL_IDS = [
@@ -25,6 +27,8 @@ export const CODEX_LONG_CONTEXT_MODEL_IDS = [
   CODEX_GPT_6_SOL_MODEL_ID,
   CODEX_GPT_6_LUNA_MODEL_ID,
   CODEX_GPT_6_1_SOL_MODEL_ID,
+  CODEX_GPT_6_2_ASTRA_MODEL_ID,
+  CODEX_GPT_6_2_SOL_MODEL_ID,
 ] as const
 
 const LONG_CONTEXT_MODEL_IDS = new Set<string>(CODEX_LONG_CONTEXT_MODEL_IDS)
@@ -89,6 +93,22 @@ const GPT_6_MODELS = [
     cost: gpt6Cost(2, 10, 0.1, 2.5),
     thinkingLevelMap: GPT_6_THINKING_LEVEL_MAP,
   },
+  {
+    id: CODEX_GPT_6_2_ASTRA_MODEL_ID,
+    templateId: 'gpt-5.6-sol',
+    name: 'GPT-6.2 Astra',
+    contextWindow: CODEX_STANDARD_CONTEXT_WINDOW,
+    cost: gpt6Cost(8, 40, 0.4, 10),
+    thinkingLevelMap: GPT_6_THINKING_LEVEL_MAP,
+  },
+  {
+    id: CODEX_GPT_6_2_SOL_MODEL_ID,
+    templateId: 'gpt-5.6-sol',
+    name: 'GPT-6.2 Sol',
+    contextWindow: 500_000,
+    cost: gpt6Cost(2, 10, 0.1, 2.5),
+    thinkingLevelMap: GPT_6_THINKING_LEVEL_MAP,
+  },
 ] as const
 
 /** Codex catalog source and API estimate provenance: docs/codex-model-policy.md. */
@@ -141,7 +161,7 @@ function ensureCodexCatalogModels(models: readonly Model<Api>[]): readonly Model
       ...template,
       id: descriptor.id,
       name: descriptor.name,
-      contextWindow: CODEX_STANDARD_CONTEXT_WINDOW,
+      contextWindow: 'contextWindow' in descriptor ? descriptor.contextWindow : CODEX_STANDARD_CONTEXT_WINDOW,
       maxTokens: 128_000,
       cost: descriptor.cost,
       thinkingLevelMap: { ...descriptor.thinkingLevelMap },

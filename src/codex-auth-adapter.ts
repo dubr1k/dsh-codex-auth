@@ -48,6 +48,8 @@ import {
   CODEX_GPT_6_LUNA_MODEL_ID,
   CODEX_GPT_6_SOL_MODEL_ID,
   CODEX_GPT_6_1_SOL_MODEL_ID,
+  CODEX_GPT_6_2_ASTRA_MODEL_ID,
+  CODEX_GPT_6_2_SOL_MODEL_ID,
 } from './codex-context.ts'
 import type { CodexLlmSettings } from './codex-context.ts'
 import { CodexNativeCheckpointReplay } from './native-checkpoint-replay.ts'
@@ -419,9 +421,15 @@ export class CodexAuthAdapter extends PiAiAdapter {
   }
 }
 
-/** The Codex CLI defaults GPT-6.1 Sol to low, unlike the public API default. */
+const CODEX_LOW_EFFORT_MODELS = new Set<string>([
+  CODEX_GPT_6_1_SOL_MODEL_ID,
+  CODEX_GPT_6_2_ASTRA_MODEL_ID,
+  CODEX_GPT_6_2_SOL_MODEL_ID,
+])
+
+/** Match the Codex CLI defaults when no reasoning effort is selected. */
 function withCodexModelDefaults(options: GenerateOptions): GenerateOptions {
-  return options.model === CODEX_GPT_6_1_SOL_MODEL_ID && options.reasoningEffort === undefined
+  return options.reasoningEffort === undefined && CODEX_LOW_EFFORT_MODELS.has(options.model)
     ? { ...options, reasoningEffort: ReasoningEffortId('low') }
     : options
 }
@@ -442,6 +450,13 @@ async function* validateCodexStream(
     && options.temperature !== undefined) {
     throw new LlmError(
       'GPT-6 Sol, Luna, and GPT-6.1 Sol do not support temperature on this Codex route; remove temperature from the model request',
+      'UNSUPPORTED_OPTION',
+    )
+  }
+  if (options.temperature !== undefined
+    && (options.model === CODEX_GPT_6_2_ASTRA_MODEL_ID || options.model === CODEX_GPT_6_2_SOL_MODEL_ID)) {
+    throw new LlmError(
+      `${options.model} does not support temperature on this Codex route; remove temperature from the model request`,
       'UNSUPPORTED_OPTION',
     )
   }

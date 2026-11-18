@@ -16,7 +16,10 @@ import {
 } from '../src/codex-context.ts'
 import type { CodexLlmSettings } from '../src/codex-context.ts'
 
-const NEW_MODELS = [CODEX_GPT_6_SOL_MODEL_ID, CODEX_GPT_6_LUNA_MODEL_ID, CODEX_GPT_6_1_SOL_MODEL_ID] as const
+const GPT_6_2_MODELS = ['gpt-6.2-astra', 'gpt-6.2-sol'] as const
+const NEW_MODELS = [
+  CODEX_GPT_6_SOL_MODEL_ID, CODEX_GPT_6_LUNA_MODEL_ID, CODEX_GPT_6_1_SOL_MODEL_ID, ...GPT_6_2_MODELS,
+] as const
 
 const fallbackCatalog = vi.hoisted(() => ({ enabled: false }))
 vi.mock('@earendil-works/pi-ai/providers/all', async importOriginal => {
@@ -313,9 +316,9 @@ describe('Codex model request policy', () => {
       },
     )
 
-    it('defaults GPT-6.1 Sol to Codex low without mutating caller options', async () => {
+    it.each([CODEX_GPT_6_1_SOL_MODEL_ID, ...GPT_6_2_MODELS])('defaults %s to Codex low without mutating caller options', async model => {
       const { adapter, payloads } = fixture()
-      const options = Object.freeze(request({ model: CODEX_GPT_6_1_SOL_MODEL_ID }))
+      const options = Object.freeze(request({ model }))
       const call = mode === 'prepared' ? await adapter.prepareCall(options.provider, options.model) : adapter
       await drain(call.stream(options))
       expect(payloads[0]).toMatchObject({ reasoning: { effort: 'low' } })

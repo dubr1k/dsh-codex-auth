@@ -1,13 +1,13 @@
 # dsh-codex-auth
 
-> **DSH compatibility:** This candidate targets the coherent DSH **0.2.2-rc.1 / rc.2 / rc.3** graph with pi-ai **1.3.0**. Exact experimental peers reject older, mixed, and future graphs. Older Harness installations should retain a compatible older plugin release. See the [upgrade guide](docs/dsh-0.2.2-upgrade.md).
+> **DSH compatibility:** This candidate targets the coherent DSH **0.2.2-rc.1 / rc.2 / rc.3 / rc.4** graph with pi-ai **1.3.0**. Exact experimental peers reject older, mixed, and future graphs. Older Harness installations should retain a compatible older plugin release. See the [upgrade guide](docs/dsh-0.2.2-upgrade.md).
 
 [![npm rc version](https://img.shields.io/npm/v/dsh-codex-auth/rc.svg?label=npm%20rc)](https://www.npmjs.com/package/dsh-codex-auth)
 [![awesome · DSH plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
 English | [中文](README.zh.md)
 
-Release candidate: **v0.3.4-rc.4** (proposed; not published by this change).
+Release candidate: **v0.3.4-rc.5**.
 
 A self-contained [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
 **Codex Capability Bundle**. It reuses the ChatGPT login maintained by the
@@ -27,6 +27,10 @@ official **Codex CLI** (`~/.codex/auth.json`, or `$CODEX_HOME/auth.json`) for:
 > production workloads.
 
 DSH 0.2.2-rc.3 is supported with pi-ai 1.3.0; mixed runtime versions are rejected.
+
+## 0.3.4-rc.5: GPT-6.2 and DSH 0.2.2-rc.4
+
+GPT-6.2 Astra and GPT-6.2 Sol are available through ChatGPT OAuth. Their standard context windows are 272,000 and 500,000 tokens, respectively. Long Context uses 872,000 tokens for both.
 
 ## 0.3.4-rc.4: DSH 0.2.2-rc.1
 
@@ -534,7 +538,7 @@ See the [upgrade evidence and test recipe](docs/dsh-0.2.2-upgrade.md). Stop `dsh
 
 ```sh
 dsh --version
-dsh plugin --profile web add dsh-codex-auth@0.3.4-rc.4
+dsh plugin --profile web add /absolute/path/to/dsh-codex-auth-0.3.4-rc.5.tgz
 dsh plugin --profile web list
 ```
 

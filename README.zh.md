@@ -1,13 +1,13 @@
 # dsh-codex-auth
 
-> **DSH 兼容性：** 此候选版本适配完整一致的 DSH **0.2.2-rc.1 / rc.2 / rc.3** 依赖图及 pi-ai **1.3.0**。实验性 peer 与运行时检查仍拒绝旧版、混合及未来版本，不添加兼容性豁免。旧 Harness 请保留相应旧插件。见[升级指南](docs/dsh-0.2.2-upgrade.md)。
+> **DSH 兼容性：** 此候选版本适配完整一致的 DSH **0.2.2-rc.1 / rc.2 / rc.3 / rc.4** 依赖图及 pi-ai **1.3.0**。实验性 peer 与运行时检查仍拒绝旧版、混合及未来版本，不添加兼容性豁免。旧 Harness 请保留相应旧插件。见[升级指南](docs/dsh-0.2.2-upgrade.md)。
 
 [![npm rc version](https://img.shields.io/npm/v/dsh-codex-auth/rc.svg?label=npm%20rc)](https://www.npmjs.com/package/dsh-codex-auth)
 [![awesome · DSH plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
 [English](README.md) | 中文
 
-候选版本：**v0.3.4-rc.4**（此变更不执行发布）。
+候选版本：**v0.3.4-rc.5**。
 
 这是一个自包含的 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
 **Codex 能力包**。它复用官方 **Codex CLI** 维护的 ChatGPT 登录态
@@ -27,6 +27,10 @@
 ## Codex SSE 请求
 
 Codex LLM 的 SSE 请求使用未压缩 JSON。适配器在 HTTP 发送前将 pi-ai 的 zstd 请求字节还原为相同 JSON，因为 Codex 后端可能以 `400 {"detail":"Bad Request"}` 拒绝压缩请求。模型、推理级别、加密回放数据、认证、取消和响应处理保持不变；不会重试被拒绝的请求，也不会修改 WebSocket 帧。
+
+## 0.3.4-rc.5：GPT-6.2 和 DSH 0.2.2-rc.4
+
+GPT-6.2 Astra 和 GPT-6.2 Sol 可通过 ChatGPT OAuth 使用，标准上下文分别为 272,000 和 500,000 token。长上下文模式为两者使用 872,000 token。
 
 ## 0.3.4-rc.3：DSH 0.2.2-rc.1
 
@@ -395,7 +399,7 @@ DSH alpha.5 会把持久化 `tool/call` 与 `tool/result` 事件分别投影为 
 
 ```sh
 dsh --version
-dsh plugin --profile web add dsh-codex-auth@0.3.4-rc.4
+dsh plugin --profile web add /absolute/path/to/dsh-codex-auth-0.3.4-rc.5.tgz
 dsh plugin --profile web list
 ```
 

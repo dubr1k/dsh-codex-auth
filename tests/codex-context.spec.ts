@@ -32,6 +32,19 @@ function fakeModel(id: string, extra: Partial<Model<Api>> = {}): Model<Api> {
 }
 
 describe('applyCodexContextPolicy', () => {
+  it.each([
+    ['gpt-6.2-astra', 'GPT-6.2 Astra', 272_000, { input: 8, output: 40, cacheRead: 0.4, cacheWrite: 10 }],
+    ['gpt-6.2-sol', 'GPT-6.2 Sol', 500_000, { input: 2, output: 10, cacheRead: 0.1, cacheWrite: 2.5 }],
+  ] as const)('uses the Codex context budgets for %s', (id, name, contextWindow, cost) => {
+    const models = [fakeModel('gpt-5.6-sol')]
+    expect(applyCodexContextPolicy(models, { longContextEnabled: false }).find(model => model.id === id))
+      .toMatchObject({ id, name, contextWindow, maxTokens: 128_000, cost })
+    expect(applyCodexContextPolicy(models, { longContextEnabled: true }).find(model => model.id === id)?.contextWindow)
+      .toBe(872_000)
+    expect(applyCodexContextPolicy(models, { longContextEnabled: true, excludedModelIds: [id] }).some(model => model.id === id))
+      .toBe(false)
+  })
+
   it.each(CODEX_LONG_CONTEXT_MODEL_IDS)('caps %s long context at the verified Codex maximum', modelId => {
     const models = [fakeModel(modelId)]
     const catalog = applyCodexContextPolicy(models, { longContextEnabled: true })
@@ -94,6 +107,8 @@ describe('applyCodexContextPolicy', () => {
       CODEX_GPT_6_SOL_MODEL_ID,
       CODEX_GPT_6_LUNA_MODEL_ID,
       CODEX_GPT_6_1_SOL_MODEL_ID,
+      'gpt-6.2-astra',
+      'gpt-6.2-sol',
       'gpt-5.6-sol',
       'gpt-5.6-luna',
       'gpt-5.6-terra',

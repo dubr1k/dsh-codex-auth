@@ -3,10 +3,11 @@ export const SUPPORTED_DSH_RUNTIMES: readonly string[] = Object.freeze([
   '0.2.2-rc.1',
   '0.2.2-rc.2',
   '0.2.2-rc.3',
+  '0.2.2-rc.4',
 ])
 
 /** Observed coherent prereleases; future RCs and stable releases need their own verification. */
-export const SUPPORTED_DSH_PEER_RANGE = '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3'
+export const SUPPORTED_DSH_PEER_RANGE = '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4'
 
 export function isSupportedDshGraph(versions: readonly string[]): boolean {
   const version = versions[0]

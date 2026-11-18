@@ -1,10 +1,9 @@
-# Upgrade to DSH 0.2.2-rc.1
+# Upgrade to DSH 0.2.2
 
-This candidate targets the coherent DSH `0.2.2-rc.1` graph, Cordis `4.1.0`,
+This candidate targets coherent DSH `0.2.2-rc.1` through `0.2.2-rc.4` graphs, Cordis `4.1.0`,
 Schemastery `3.19.0`, and pi-ai `1.3.0`. The official Harness source tag is
 [`dsh-v0.2.2-rc.1`](https://github.com/deepseek-ai/deepseek-harness/tree/66491b05e3f05ad35bcdd4f6cd7ed26041d9e3db).
-The proposed plugin version is `0.3.4-rc.4`; opening or merging this change does
-not itself publish an npm release or move a dist-tag.
+The integration kit distributes plugin `0.3.4-rc.5` as a package archive.
 
 ## Why the released plugin stops loading
 
@@ -53,7 +52,7 @@ For a development build:
 pnpm install --frozen-lockfile
 pnpm run check
 pnpm pack --pack-destination /absolute/path/to/artifacts
-dsh plugin --profile desktop add /absolute/path/to/artifacts/dsh-codex-auth-0.3.4-rc.4.tgz
+dsh plugin --profile desktop add /absolute/path/to/artifacts/dsh-codex-auth-0.3.4-rc.5.tgz
 ```
 
 The `desktop` example targets the installed Electron application's profile;

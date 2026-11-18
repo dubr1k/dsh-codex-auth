@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.4-rc.5]
+
+- Add GPT-6.2 Astra and Sol to the Codex OAuth catalog with model-specific context budgets and the Codex default reasoning effort.
+- Admit a coherent DSH 0.2.2-rc.4 runtime with pi-ai 1.3.0.
+
 ## [0.3.4-rc.4]
 
 - Admit coherent DSH 0.2.2-rc.3 with pi-ai 1.3.0, preserving rc.1/rc.2 support and rejection of mixed or future runtime versions.
