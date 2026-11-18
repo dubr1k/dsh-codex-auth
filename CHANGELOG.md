@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4-rc.6]
+
+- Qualify pi-ai 1.5.2 for Codex requests, compaction and checkpoint replay on coherent DSH runtimes. Preserve support for signed Desktop builds that ship pi-ai 1.3.0.
+
 ## [0.3.4-rc.5]
 
 - Add GPT-6.2 Astra and Sol to the Codex OAuth catalog with model-specific context budgets and the Codex default reasoning effort.

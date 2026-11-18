@@ -2486,7 +2486,7 @@ describe('Codex Dual Checkpoint manual tracer bullet', () => {
 
   it.each([
     { model: MODEL, wireTypes: ['additional_tools'] },
-    { model: 'gpt-5.5', wireTypes: ['tool_search_call', 'tool_search_output'] },
+    { model: 'gpt-6-sol', wireTypes: ['additional_tools'] },
   ])('keeps actual $model developer tool-addition history Portable during compaction', async ({ model, wireTypes }) => {
     const { ctx, requests } = mountDualCheckpointHost({ accountId: `acct_projected_${model}_fixture` })
     vi.spyOn(ctx.sessions, 'flush').mockResolvedValue(true)

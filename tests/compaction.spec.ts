@@ -623,7 +623,7 @@ describe('Codex Portable Checkpoint Adapter', () => {
     expect(adapter.requests.map(request => request.purpose)).toEqual(['compaction', 'compaction'])
   })
 
-  it('accepts the resolved 0.2.2-rc.1 and pi-ai 1.3.0 runtime pair', () => {
+  it.each(['1.3.0', '1.5.2'])('accepts pi-ai %s in a coherent DSH runtime', piAi => {
     expect(() => assertCodexCompactionCompatibility({
       dsh: {
         '@deepseek-ai/dsh-agent': '0.2.2-rc.1',
@@ -634,7 +634,7 @@ describe('Codex Portable Checkpoint Adapter', () => {
         '@deepseek-ai/dsh-session': '0.2.2-rc.1',
         '@deepseek-ai/dsh-token-meter': '0.2.2-rc.1',
       },
-      piAi: '1.3.0',
+      piAi,
     })).not.toThrow()
   })
 
@@ -658,7 +658,7 @@ describe('Codex Portable Checkpoint Adapter', () => {
   it('fails loud when any experimental DSH or pi-ai runtime package leaves the pinned pair', () => {
     expect(CODEX_COMPACTION_COMPATIBILITY).toEqual({
       dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4',
-      piAi: '1.3.0',
+      piAi: '1.5.2',
     })
     const pinnedDsh = {
       '@deepseek-ai/dsh-agent': '0.2.2-rc.1',
@@ -689,7 +689,7 @@ describe('Codex Portable Checkpoint Adapter', () => {
       dsh: { ...pinnedDsh, '@deepseek-ai/dsh-llm-pi-ai': '0.1.2-alpha.4' },
       piAi: '1.3.0',
     })).toThrow(/@deepseek-ai\/dsh-llm-pi-ai=0\.1\.2-alpha\.4/)
-    for (const piAi of ['0.84.2', '0.87.1', '1.1.1']) {
+    for (const piAi of ['0.84.2', '0.87.1', '1.1.1', '1.5.3']) {
       expect(() => assertCodexCompactionCompatibility({ dsh: pinnedDsh, piAi }))
         .toThrow(/requires DSH 0\.2\.2-rc\.1.*pi-ai 1\.3\.0/)
     }

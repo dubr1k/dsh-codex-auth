@@ -164,7 +164,7 @@ describe('Codex Native Checkpoint codec', () => {
   it('pins replay to the observed DSH and pi-ai conversion pair', () => {
     expect(CODEX_NATIVE_REPLAY_COMPATIBILITY).toEqual({
       dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4',
-      piAi: '1.3.0',
+      piAi: '1.5.2',
     })
     expect(isCodexNativeReplayRuntimeCompatible()).toBe(true)
     expect(isCodexNativeReplayRuntimeCompatible({
@@ -177,7 +177,10 @@ describe('Codex Native Checkpoint codec', () => {
       dshPiAi: '0.1.2-alpha.6',
       piAi: '1.3.0',
     })).toBe(false)
-    for (const piAi of ['0.84.2', '0.87.1', '1.1.1']) {
+    expect(isCodexNativeReplayRuntimeCompatible({
+      dshLlm: '0.2.2-rc.4', dshPiAi: '0.2.2-rc.4', piAi: '1.5.2',
+    })).toBe(true)
+    for (const piAi of ['0.84.2', '0.87.1', '1.1.1', '1.5.3']) {
       expect(isCodexNativeReplayRuntimeCompatible({
         dshLlm: '0.2.2-rc.1', dshPiAi: '0.2.2-rc.1', piAi,
       })).toBe(false)
@@ -696,7 +699,7 @@ describe('Codex Native Checkpoint replay', () => {
 
   it.each([
     { model: MODEL, wireTypes: ['additional_tools'] },
-    { model: 'gpt-5.5', wireTypes: ['tool_search_call', 'tool_search_output'] },
+    { model: 'gpt-6-sol', wireTypes: ['additional_tools'] },
   ])('keeps real $model deferred tool-history projection Portable even when its v1 digest matches', async ({ model, wireTypes }) => {
     const payloads: unknown[] = []
     const { ctx } = mountCodexAdapter(payloads)

@@ -29,7 +29,7 @@ From the plugin checkout:
 ```sh
 pnpm install --frozen-lockfile
 pnpm run check
-pnpm run check:dsh-source -- /absolute/path/to/dsh-packages /absolute/path/to/harness/patches/@earendil-works__pi-ai@1.3.0.patch
+pnpm run check:dsh-source -- /absolute/path/to/dsh-packages /absolute/path/to/harness/patches/@earendil-works__pi-ai@1.5.2.patch
 ```
 
 The source runner copies the plugin to a temporary directory, reads supplied

@@ -8,7 +8,7 @@
 import { createHash } from 'node:crypto'
 import { isPlainJsonTree, serializedJsonBytes } from './json-tree.ts'
 import { installedPackageVersion } from './package-version.ts'
-import { isSupportedDshGraph, SUPPORTED_DSH_PEER_RANGE } from './runtime-compatibility.ts'
+import { CURRENT_PI_AI_VERSION, isSupportedDshGraph, isSupportedPiAiVersion, SUPPORTED_DSH_PEER_RANGE } from './runtime-compatibility.ts'
 
 /** Stable declaration-merged content tag owned by this package. */
 export const CODEX_NATIVE_CHECKPOINT_BLOCK_TYPE = 'codex-native-checkpoint' as const
@@ -29,7 +29,7 @@ export const MAX_CODEX_NATIVE_CHECKPOINT_BYTES = 2 * 1024 * 1024
 /** Verified coherent DSH graphs sharing the observed pi-ai conversion contract. */
 export const CODEX_NATIVE_REPLAY_COMPATIBILITY = Object.freeze({
   dsh: SUPPORTED_DSH_PEER_RANGE,
-  piAi: '1.3.0',
+  piAi: CURRENT_PI_AI_VERSION,
 })
 
 /** Installed package facts that decide whether marker replay is safe. */
@@ -44,7 +44,7 @@ export function isCodexNativeReplayRuntimeCompatible(
   actual: CodexNativeReplayRuntimeVersions = installedNativeReplayVersions(),
 ): boolean {
   return isSupportedDshGraph([actual.dshLlm, actual.dshPiAi])
-    && actual.piAi === CODEX_NATIVE_REPLAY_COMPATIBILITY.piAi
+    && isSupportedPiAiVersion(actual.piAi)
 }
 
 /** Lossless JSON values accepted by the checkpoint carrier. */

@@ -15,3 +15,11 @@ export function isSupportedDshGraph(versions: readonly string[]): boolean {
     && SUPPORTED_DSH_RUNTIMES.includes(version)
     && versions.every(candidate => candidate === version)
 }
+
+/** Development version of the Pi converter shared with the updated Harness build. */
+export const CURRENT_PI_AI_VERSION = '1.5.2'
+
+/** Accept the converter versions shipped by the original Desktop and the updated build. */
+export function isSupportedPiAiVersion(version: string): boolean {
+  return version === '1.3.0' || version === CURRENT_PI_AI_VERSION
+}

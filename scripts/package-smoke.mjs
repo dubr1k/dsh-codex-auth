@@ -14,7 +14,8 @@ const EXPERIMENTAL_DSH_PEERS = [
   '@deepseek-ai/dsh-compaction-basic',
   '@deepseek-ai/dsh-token-meter',
 ]
-const PI_AI_VERSION = '1.3.0'
+const PI_AI_VERSION = '1.5.2'
+const DESKTOP_PI_AI_VERSION = '1.3.0'
 const EXACT_SUPPORT_PACKAGES = {
   '@deepseek-ai/cordis': '4.1.0',
   '@deepseek-ai/schemastery': '3.19.0',
@@ -134,8 +135,9 @@ try {
   if (piPeerRange === null
     || piPeerMinimum === null
     || !semver.satisfies(PI_AI_VERSION, piPeerRange, SEMVER_OPTIONS)
-    || semver.lt(piPeerMinimum, PI_AI_VERSION)) {
-    throw new Error(`package smoke: pi-ai peer range must start at ${PI_AI_VERSION}`)
+    || !semver.satisfies(DESKTOP_PI_AI_VERSION, piPeerRange, SEMVER_OPTIONS)
+    || semver.lt(piPeerMinimum, DESKTOP_PI_AI_VERSION)) {
+    throw new Error(`package smoke: pi-ai peer range must start at ${DESKTOP_PI_AI_VERSION} and accept ${PI_AI_VERSION}`)
   }
   if (manifest.devDependencies?.['@earendil-works/pi-ai'] !== PI_AI_VERSION) {
     throw new Error(`package smoke: devDependencies must pin pi-ai to ${PI_AI_VERSION}`)
