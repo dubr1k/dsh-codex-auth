@@ -1,15 +1,8 @@
-/** Static fail-closed guard for account RPC after DSH removed per-channel authority. */
+/** Fail-closed guard for account RPC after DSH removed per-channel authority. */
 
-import type { ConnectionRpcHandler, ConnectionRpcResult } from '@deepseek-ai/dsh-client-connection'
+import type { ConnectionRpcHandler } from '@deepseek-ai/dsh-client-connection'
 
 export type LoopbackRpcMode = 'enabled' | 'blocked'
-
-export interface LoopbackRpcGuard {
-  /** Why the guarded handler is available or blocked for this Host composition. */
-  readonly mode: LoopbackRpcMode
-  /** Handler safe to register on the public Connection service. */
-  readonly handler: ConnectionRpcHandler
-}
 
 export const LOOPBACK_REQUIRED_MESSAGE = 'Codex account controls require a loopback-bound DSH Host'
 
@@ -45,27 +38,20 @@ export function commandAccountMode(webServer: { readonly host?: string } | undef
   return loopbackMode(webServer.host)
 }
 
-/**
- * Select the real RPC dispatcher only for an explicitly loopback-bound Web
- * service; any other composition registers a value-free inert dispatcher that
- * never calls the delegate.
- */
+/** Read the current Host bind for each call, including after WebServer starts or reloads. */
 export function createLoopbackRpcGuard(
-  webServerHost: string | undefined,
+  currentHost: () => string | undefined,
   delegate: ConnectionRpcHandler,
-): LoopbackRpcGuard {
-  if (loopbackMode(webServerHost) === 'blocked') {
+): ConnectionRpcHandler {
+  return async (...args) => {
+    if (loopbackMode(currentHost()) === 'enabled') return delegate(...args)
     return {
-      mode: 'blocked',
-      handler: async (): Promise<ConnectionRpcResult<never>> => ({
-        ok: false,
-        error: {
-          code: 'loopback-required',
-          message: LOOPBACK_REQUIRED_MESSAGE,
-          details: {},
-        },
-      }),
+      ok: false,
+      error: {
+        code: 'loopback-required',
+        message: LOOPBACK_REQUIRED_MESSAGE,
+        details: {},
+      },
     }
   }
-  return { mode: 'enabled', handler: delegate }
 }

@@ -1,6 +1,6 @@
 # Upgrade to DSH 0.2.2
 
-Plugin `0.3.4-rc.7` supports coherent DSH `0.2.2-rc.1` through `0.2.2-rc.5` graphs with Cordis `4.1.0`, Schemastery `3.19.0` and pi-ai `1.3.0` or `1.5.2`. The [rc.5 release](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.2-rc.5) supplies the upstream runtime.
+Plugin `0.3.4-rc.8` supports coherent DSH `0.2.2-rc.1` through `0.2.2-rc.5` graphs with Cordis `4.1.0`, Schemastery `3.19.0` and pi-ai `1.3.0` or `1.5.2`. The [rc.5 release](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.2-rc.5) supplies the upstream runtime.
 
 ## Why the released plugin stops loading
 

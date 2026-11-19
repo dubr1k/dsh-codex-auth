@@ -33,7 +33,7 @@ it('serves authenticated account RPC on the real Connection Host and disposes it
     expect(cookie).toBeDefined()
     const namespace = 'codex-auth'
     const channel = '/api/' + namespace
-    const dispose = registerAccountRoutes(ctx.connection, namespace, ['status'], createLoopbackRpcGuard('127.0.0.1', delegate).handler)
+    const dispose = registerAccountRoutes(ctx.connection, namespace, ['status'], createLoopbackRpcGuard(() => '127.0.0.1', delegate))
     const send = (body: unknown, authenticated = true, contentType = 'application/json', origin?: string) => fetch(baseUrl + channel + '/status', {
       method: 'POST', headers: { 'content-type': contentType, ...(authenticated ? { cookie: cookie! } : {}), ...(origin ? { origin } : {}) },
       body: typeof body === 'string' ? body : JSON.stringify(body),
@@ -63,7 +63,7 @@ it('serves authenticated account RPC on the real Connection Host and disposes it
     expect(delegate).toHaveBeenCalledTimes(1)
     await dispose()
     expect((await send(envelope)).status).toBe(404)
-    const blocked = registerAccountRoutes(ctx.connection, namespace, ['status'], createLoopbackRpcGuard('0.0.0.0', delegate).handler)
+    const blocked = registerAccountRoutes(ctx.connection, namespace, ['status'], createLoopbackRpcGuard(() => '0.0.0.0', delegate))
     const denied = await send(envelope)
     expect(await denied.json()).toMatchObject({ result: { ok: false, error: { code: 'loopback-required' } } })
     expect(delegate).toHaveBeenCalledTimes(1)

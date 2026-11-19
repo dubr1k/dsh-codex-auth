@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4-rc.8]
+
+- Resolve the current WebServer bind when handling Codex account requests. Fast and quota controls work when Desktop starts the loopback listener after the plugin.
+
 ## [0.3.4-rc.7]
 
 - Support DSH 0.2.2-rc.5 with pi-ai 1.3.0 and 1.5.2 for Codex compaction and checkpoint replay.

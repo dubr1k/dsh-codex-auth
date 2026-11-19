@@ -28,10 +28,9 @@ describe('commandAccountMode', () => {
 describe('alpha.5 loopback RPC guard', () => {
   it('keeps the real handler on the explicit loopback Web bind', async () => {
     const delegate = vi.fn((_endpoint: string, payload: unknown) => success(payload))
-    const guard = createLoopbackRpcGuard('127.0.0.1', delegate)
+    const guard = createLoopbackRpcGuard(() => '127.0.0.1', delegate)
 
-    expect(guard.mode).toBe('enabled')
-    await expect(guard.handler('status', { value: 1 }, signal)).resolves.toEqual({
+    await expect(guard('status', { value: 1 }, signal)).resolves.toEqual({
       ok: true,
       value: { value: 1 },
     })
@@ -40,10 +39,9 @@ describe('alpha.5 loopback RPC guard', () => {
 
   it('fails closed when WebServer is absent because carrier ownership is unproven', async () => {
     const delegate = vi.fn((_endpoint: string, payload: unknown) => success(payload))
-    const guard = createLoopbackRpcGuard(undefined, delegate)
+    const guard = createLoopbackRpcGuard(() => undefined, delegate)
 
-    expect(guard.mode).toBe('blocked')
-    await expect(guard.handler('status', {}, signal)).resolves.toEqual({
+    await expect(guard('status', {}, signal)).resolves.toEqual({
       ok: false,
       error: {
         code: 'loopback-required',
@@ -56,11 +54,10 @@ describe('alpha.5 loopback RPC guard', () => {
 
   it.each(['0.0.0.0', 'unknown-host'])('fails closed on the non-loopback or unknown bind %s', async bindHost => {
     const delegate = vi.fn((_endpoint: string, payload: unknown) => success(payload))
-    const guard = createLoopbackRpcGuard(bindHost, delegate)
+    const guard = createLoopbackRpcGuard(() => bindHost, delegate)
 
-    expect(guard.mode).toBe('blocked')
     for (const endpoint of ['status', 'usage', 'login', 'unknown']) {
-      const result = await guard.handler(endpoint, { accessToken: 'forbidden-value' }, signal)
+      const result = await guard(endpoint, { accessToken: 'forbidden-value' }, signal)
       expect(result).toEqual({
         ok: false,
         error: {
@@ -73,4 +70,14 @@ describe('alpha.5 loopback RPC guard', () => {
     }
     expect(delegate).not.toHaveBeenCalled()
   })
+})
+
+it('follows the WebServer bind across late activation and disposal', async () => {
+  let host: string | undefined
+  const delegate = vi.fn(async () => ({ ok: true as const, value: 'available' }))
+  const handler = createLoopbackRpcGuard(() => host, delegate)
+  for (host of [undefined, '127.0.0.1', undefined, '0.0.0.0']) {
+    expect((await handler('status', {}, signal)).ok).toBe(host === '127.0.0.1')
+  }
+  expect(delegate).toHaveBeenCalledTimes(1)
 })

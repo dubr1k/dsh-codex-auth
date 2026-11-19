@@ -40,7 +40,7 @@ import { liveValue, type LiveValue } from './volatile-config.ts'
 import { installEnvHttpProxy } from './env-proxy.ts'
 import { createCodexAuthCommand } from './auth-command.ts'
 import {
-  commandAccountMode, createLoopbackRpcGuard, type LoopbackRpcMode,
+  commandAccountMode, createLoopbackRpcGuard,
 } from './loopback-rpc.ts'
 import { registerAccountRoutes } from './account-routes.ts'
 import { installForeignCheckpointProjection } from './foreign-checkpoint-projection.ts'
@@ -107,14 +107,8 @@ export function apply(ctx: Context, config: Config): void {
     refreshLeadMs: config.refreshLeadMs,
     fetchImpl: fetch,
   })
-  // Account-control activation for the slash command. A terminal composition
-  // composes no public WebServer, so the command starts enabled (local-only
-  // dispatch); the connection inject below records the WebServer bind and
-  // blocks every account operation when the commands seam is exposed beyond
-  // loopback. The account RPC keeps its own ADR-0008 static loopback guard.
-  let accountMode: LoopbackRpcMode = 'enabled'
   ctx.inject(['commands'], commandCtx => {
-    commandCtx.commands.register(createCodexAuthCommand(service, () => accountMode))
+    commandCtx.commands.register(createCodexAuthCommand(service, () => commandAccountMode(commandCtx.get('webServer'))))
   })
   const currentSettings = (): CodexLlmSettings => ({
     longContextEnabled: liveValue(config.longContextEnabled),
@@ -153,10 +147,8 @@ export function apply(ctx: Context, config: Config): void {
   })
   ctx.on('loader/volatile-update', announceModelPolicyChange)
   ctx.inject(['connection'], connectionCtx => {
-    const webServer = connectionCtx.get('webServer')
-    accountMode = commandAccountMode(webServer)
     const guard = createLoopbackRpcGuard(
-      webServer?.host,
+      () => connectionCtx.get('webServer')?.host,
       (endpoint, payload, signal) => handleCodexAuthRpc(service, endpoint, payload, signal, async (id, enabled) => {
         const sessions = ctx.get('sessions') as SessionStore | undefined
         if (sessions === undefined) throw new Error('Session store is unavailable')
@@ -175,10 +167,7 @@ export function apply(ctx: Context, config: Config): void {
         return sessionFastModeView(session, currentSettings().fastModeEnabled === true)
       }),
     )
-    if (guard.mode === 'blocked') {
-      connectionCtx.logger.warn('llm-codex-auth: account RPC is disabled because the WebServer is not loopback-bound')
-    }
-    return registerAccountRoutes(connectionCtx.connection, CODEX_AUTH_RPC_NAMESPACE, ['status', 'usage', 'login', 'fast-mode'], guard.handler)
+    return registerAccountRoutes(connectionCtx.connection, CODEX_AUTH_RPC_NAMESPACE, ['status', 'usage', 'login', 'fast-mode'], guard)
   })
   if (config.llmEnabled) {
     ctx.logger.info(
