@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4-rc.7]
+
+- Support DSH 0.2.2-rc.5 with pi-ai 1.3.0 and 1.5.2 for Codex compaction and checkpoint replay.
+
 ## [0.3.4-rc.6]
 
 - Qualify pi-ai 1.5.2 for Codex requests, compaction and checkpoint replay on coherent DSH runtimes. Preserve support for signed Desktop builds that ship pi-ai 1.3.0.

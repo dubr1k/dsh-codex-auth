@@ -657,7 +657,7 @@ describe('Codex Portable Checkpoint Adapter', () => {
 
   it('fails loud when any experimental DSH or pi-ai runtime package leaves the pinned pair', () => {
     expect(CODEX_COMPACTION_COMPATIBILITY).toEqual({
-      dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4',
+      dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4 || 0.2.2-rc.5',
       piAi: '1.5.2',
     })
     const pinnedDsh = {
@@ -697,7 +697,7 @@ describe('Codex Portable Checkpoint Adapter', () => {
 })
 
 
-it.each(['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.4'])('accepts coherent %s compaction and rejects mixing the supported RCs', version => {
+it.each(['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.4', '0.2.2-rc.5'])('accepts coherent %s compaction and rejects mixing the supported RCs', version => {
   const other = version === '0.2.2-rc.1' ? '0.2.2-rc.2' : '0.2.2-rc.1'
   const dsh = {
     '@deepseek-ai/dsh-agent': version,

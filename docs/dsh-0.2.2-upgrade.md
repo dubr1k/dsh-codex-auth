@@ -1,9 +1,6 @@
 # Upgrade to DSH 0.2.2
 
-This candidate targets coherent DSH `0.2.2-rc.1` through `0.2.2-rc.4` graphs, Cordis `4.1.0`,
-Schemastery `3.19.0`, and pi-ai `1.3.0`. The official Harness source tag is
-[`dsh-v0.2.2-rc.1`](https://github.com/deepseek-ai/deepseek-harness/tree/66491b05e3f05ad35bcdd4f6cd7ed26041d9e3db).
-The integration kit distributes plugin `0.3.4-rc.5` as a package archive.
+Plugin `0.3.4-rc.7` supports coherent DSH `0.2.2-rc.1` through `0.2.2-rc.5` graphs with Cordis `4.1.0`, Schemastery `3.19.0` and pi-ai `1.3.0` or `1.5.2`. The [rc.5 release](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.2-rc.5) supplies the upstream runtime.
 
 ## Why the released plugin stops loading
 
@@ -15,7 +12,7 @@ admission failure.
 
 This candidate moves the complete development graph, peers, package smoke,
 and Native/compaction runtime guards together. It accepts only the new exact
-experimental graph with pi-ai `1.3.0`, rejects mixed or future versions, and
+experimental graphs with pi-ai `1.3.0` or `1.5.2`, rejects mixed or future versions, and
 does not add an exemption. Older Harness installations should retain a plugin
 release tested against their runtime.
 

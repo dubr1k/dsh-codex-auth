@@ -163,13 +163,13 @@ describe('Codex Native Checkpoint codec', () => {
 
   it('pins replay to the observed DSH and pi-ai conversion pair', () => {
     expect(CODEX_NATIVE_REPLAY_COMPATIBILITY).toEqual({
-      dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4',
+      dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4 || 0.2.2-rc.5',
       piAi: '1.5.2',
     })
     expect(isCodexNativeReplayRuntimeCompatible()).toBe(true)
     expect(isCodexNativeReplayRuntimeCompatible({
-      dshLlm: '0.2.2-rc.4',
-      dshPiAi: '0.2.2-rc.4',
+      dshLlm: '0.2.2-rc.5',
+      dshPiAi: '0.2.2-rc.5',
       piAi: '1.3.0',
     })).toBe(true)
     expect(isCodexNativeReplayRuntimeCompatible({
@@ -178,7 +178,7 @@ describe('Codex Native Checkpoint codec', () => {
       piAi: '1.3.0',
     })).toBe(false)
     expect(isCodexNativeReplayRuntimeCompatible({
-      dshLlm: '0.2.2-rc.4', dshPiAi: '0.2.2-rc.4', piAi: '1.5.2',
+      dshLlm: '0.2.2-rc.5', dshPiAi: '0.2.2-rc.5', piAi: '1.5.2',
     })).toBe(true)
     for (const piAi of ['0.84.2', '0.87.1', '1.1.1', '1.5.3']) {
       expect(isCodexNativeReplayRuntimeCompatible({

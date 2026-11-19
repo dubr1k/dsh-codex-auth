@@ -172,12 +172,12 @@ it('reproduces the published single-RC installation rejection and accepts the ad
   const rejected = evaluatePluginCompatibility(singleRcRelease.manifest, {}, '0.2.1-rc.2')
   expect(Object.keys(rejected?.requirements ?? {}).sort()).toEqual([...exactPeers].sort())
   expect(rejected?.exempted).toBe(false)
-  for (const runtime of ['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.4']) {
+  for (const runtime of ['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.4', '0.2.2-rc.5']) {
     expect(evaluatePluginCompatibility(manifest, {}, runtime)).toBeUndefined()
   }
 })
 
-it.each(['0.2.1-rc.0', '0.2.1-rc.1.1', '0.2.1-rc.2.1', '0.2.1-rc.3', '0.2.1', '0.2.2-rc.5', '0.2.2', '0.3.0'])('does not admit unverified %s through prerelease range semantics', runtime => {
+it.each(['0.2.1-rc.0', '0.2.1-rc.1.1', '0.2.1-rc.2.1', '0.2.1-rc.3', '0.2.1', '0.2.2-rc.6', '0.2.2', '0.3.0'])('does not admit unverified %s through prerelease range semantics', runtime => {
   const rejected = evaluatePluginCompatibility(manifest, {}, runtime)
   expect(rejected).toBeDefined()
   expect(rejected?.exempted).toBe(false)
