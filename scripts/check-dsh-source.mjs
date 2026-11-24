@@ -11,13 +11,13 @@ const sourceRoot = resolve(import.meta.dirname, '..')
 const sourceVersion = process.env.DSH_VERIFY_VERSION ?? DSH_SOURCE_VERSION
 const args = process.argv.slice(2).filter(value => value !== '--')
 if (args.length !== 2) {
-  throw new Error('Usage: pnpm run check:dsh-source -- /path/to/packed-dsh-packages /path/to/@earendil-works__pi-ai@1.5.2.patch (see docs/dsh-source-verification.md)')
+  throw new Error('Usage: pnpm run check:dsh-source -- /path/to/packed-dsh-packages /path/to/@earendil-works__pi-ai@1.6.0.patch (see docs/dsh-source-verification.md)')
 }
 const packageDirectory = resolve(args[0])
 const piAiPatch = await readFile(resolve(args[1]))
 const piAiPatchSha256 = createHash('sha256').update(piAiPatch).digest('hex')
 if (piAiPatchSha256 !== '5810c51e540202470f72767f9ad5f5d94fd9c512b1f9a0a8c90237317f19e832') {
-  throw new Error('Expected the pi-ai 1.5.2 Gemini replay patch from the updated Harness source')
+  throw new Error('Expected the pi-ai 1.6.0 Gemini replay patch from the updated Harness source')
 }
 const packages = new Map()
 for (const filename of (await readdir(packageDirectory)).filter(name => name.endsWith('.tgz'))) {
@@ -75,18 +75,19 @@ if (manifest.devDependencies['@earendil-works/pi-ai']) {
 await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n')
 const workspacePath = join(checkout, 'pnpm-workspace.yaml')
 const workspace = (await readFile(workspacePath, 'utf8')).replace(/^autoInstallPeers:.*\n/gmu, '')
+  .replace(/^overrides:\n  '@earendil-works\/pi-ai': '1\.6\.0'\n/mu, '')
 if (/^(overrides|patchedDependencies):/mu.test(workspace)) throw new Error('Source verification requires reviewing existing overrides or patches')
 const patchDirectory = join(checkout, 'patches')
 await mkdir(patchDirectory)
 await writeFile(join(patchDirectory, 'pi-ai.patch'), piAiPatch)
 await writeFile(workspacePath, workspace + '\nautoInstallPeers: true\noverrides:\n'
-  + Object.entries(overrides).map(([name, value]) => '  ' + JSON.stringify(name) + ': ' + JSON.stringify(value)).join('\n') + '\npatchedDependencies:\n  "@earendil-works/pi-ai@1.5.2": patches/pi-ai.patch\n')
+  + Object.entries(overrides).map(([name, value]) => '  ' + JSON.stringify(name) + ': ' + JSON.stringify(value)).join('\n') + '\npatchedDependencies:\n  "@earendil-works/pi-ai@1.6.0": patches/pi-ai.patch\n')
 await writeFile(join(stage, 'artifacts.json'), JSON.stringify({
   target: sourceVersion,
   expectedSourceCommit: DSH_SOURCE_COMMITS[sourceVersion],
   // The build recipe establishes provenance. These checksums identify the supplied bytes.
   packages: receipt,
-  piAiPatch: { version: '1.5.2', sha256: piAiPatchSha256 },
+  piAiPatch: { version: '1.6.0', sha256: piAiPatchSha256 },
 }, null, 2) + '\n')
 const env = { ...process.env, DSH_VERIFY_VERSION: sourceVersion }
 function run(args) {

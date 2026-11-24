@@ -623,7 +623,7 @@ describe('Codex Portable Checkpoint Adapter', () => {
     expect(adapter.requests.map(request => request.purpose)).toEqual(['compaction', 'compaction'])
   })
 
-  it.each(['1.3.0', '1.5.2'])('accepts pi-ai %s in a coherent DSH runtime', piAi => {
+  it.each(['1.3.0', '1.5.2', '1.6.0'])('accepts pi-ai %s in a coherent DSH runtime', piAi => {
     expect(() => assertCodexCompactionCompatibility({
       dsh: {
         '@deepseek-ai/dsh-agent': '0.2.2-rc.1',
@@ -657,8 +657,8 @@ describe('Codex Portable Checkpoint Adapter', () => {
 
   it('fails loud when any experimental DSH or pi-ai runtime package leaves the pinned pair', () => {
     expect(CODEX_COMPACTION_COMPATIBILITY).toEqual({
-      dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4 || 0.2.2-rc.5',
-      piAi: '1.5.2',
+      dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4 || 0.2.2-rc.5 || 0.2.3-alpha.2',
+      piAi: '1.6.0',
     })
     const pinnedDsh = {
       '@deepseek-ai/dsh-agent': '0.2.2-rc.1',
@@ -697,7 +697,7 @@ describe('Codex Portable Checkpoint Adapter', () => {
 })
 
 
-it.each(['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.4', '0.2.2-rc.5'])('accepts coherent %s compaction and rejects mixing the supported RCs', version => {
+it.each(['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.4', '0.2.2-rc.5', '0.2.3-alpha.2'])('accepts coherent %s compaction and rejects mixing the supported RCs', version => {
   const other = version === '0.2.2-rc.1' ? '0.2.2-rc.2' : '0.2.2-rc.1'
   const dsh = {
     '@deepseek-ai/dsh-agent': version,

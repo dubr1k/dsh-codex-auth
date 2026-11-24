@@ -646,6 +646,7 @@ function ImageControls({
   const write = writer(scope, onError, t)
   const sizesId = useId()
   const sizeHintId = useId()
+  const parametersHintId = useId()
   const [sizeDraft, setSizeDraft] = useState<string>(value.size)
   useEffect(() => { setSizeDraft(value.size) }, [value.size])
   const saveSize = (): void => {
@@ -660,11 +661,12 @@ function ImageControls({
   return (
     <div className={classes.formRows} data-dimmed={!value.enabled || unavailable}>
       <Control label={t('imageModel')}>
-        <select aria-label={t('imageModel')} value={value.model} disabled={disabled} onChange={event => { void write('model', event.target.value) }}>
+        <select aria-label={t('imageModel')} aria-describedby={parametersHintId} value={value.model} disabled={disabled} onChange={event => { void write('model', event.target.value) }}>
           {!IMAGE_MODELS.some(model => model === value.model) && <option value={value.model}>{value.model}</option>}
           {IMAGE_MODELS.map(model => <option key={model} value={model}>{model}</option>)}
         </select>
       </Control>
+      <p className={classes.imageHint} id={parametersHintId}>{t('imageParametersHint')}</p>
       <Control label={t('defaultImageCount')}>
         <select aria-label={t('defaultImageCount')} value={value.n} disabled={disabled} onChange={event => { void write('n', Number(event.target.value)) }}>
           {Array.from({ length: 10 }, (_, index) => index + 1).map(count => <option key={count} value={count}>{count}</option>)}

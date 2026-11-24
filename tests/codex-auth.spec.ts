@@ -518,7 +518,7 @@ describe('CodexAuthService authenticated operation boundary', () => {
     const coordinator = service(fetchMock)
     let pending: Promise<Awaited<ReturnType<CodexAuthService['credential']>>> | undefined
 
-    await withFileLock(authPath, async () => {
+    await withFileLock(`${authPath}.dsh-codex-auth`, async () => {
       pending = coordinator.credential()
       await new Promise(resolve => setTimeout(resolve, 20))
       await writeFile(authPath, JSON.stringify({
@@ -540,7 +540,7 @@ describe('CodexAuthService authenticated operation boundary', () => {
     const coordinator = service(fetchMock)
     let pending: Promise<Awaited<ReturnType<CodexAuthService['credential']>>> | undefined
 
-    await withFileLock(authPath, async () => {
+    await withFileLock(`${authPath}.dsh-codex-auth`, async () => {
       pending = coordinator.credential()
       await new Promise(resolve => setTimeout(resolve, 20))
       await writeFile(authPath, JSON.stringify({

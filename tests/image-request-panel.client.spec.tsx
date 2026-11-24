@@ -26,7 +26,7 @@ describe('image request controls', () => {
     const prepare = vi.fn((_prompt: string) => true)
     render(<ImageRequestPanel prepare={prepare} t={t} />)
     fireEvent.change(screen.getByLabelText('Describe the image'), { target: { value: 'A kitten' } })
-    fireEvent.change(screen.getByLabelText('Image model'), { target: { value: 'gpt-image-2.5-flare' } })
+    fireEvent.change(screen.getByLabelText('Requested image model'), { target: { value: 'gpt-image-2.5-flare' } })
     fireEvent.click(screen.getByRole('button', { name: '1536×1024' }))
     fireEvent.click(screen.getByRole('button', { name: 'Maximum' }))
     fireEvent.click(screen.getByRole('button', { name: 'Add to message' }))

@@ -1,6 +1,5 @@
 import { Context } from '@deepseek-ai/cordis'
 import * as Connection from '@deepseek-ai/dsh-client-connection'
-import type { CredentialProvider, CredentialRecord } from '@deepseek-ai/dsh-credentials'
 import WebServer from '@deepseek-ai/dsh-host-webserver'
 import { expect, it, vi } from 'vitest'
 import { registerAccountRoutes } from '../src/account-routes.ts'
@@ -16,34 +15,28 @@ it('serves authenticated account RPC on the real Connection Host and disposes it
   const ctx = new Context()
   const delegate = vi.fn<Connection.ConnectionRpcHandler>(async () => ({ ok: true as const, value: { configured: false } }))
   try {
-    ctx.provide('credentials', {
-      modifyRecord: async (_key: unknown, update: (current: undefined) => Promise<CredentialRecord>) => update(undefined),
-    } as unknown as CredentialProvider)
     await ctx.plugin(WebServer, { host: '127.0.0.1', port: 0 })
     await ctx.plugin(Connection)
     const baseUrl = 'http://127.0.0.1:' + String(ctx.webServer.port)
-    const headers = new Map<string, string>()
-    ctx.connection.authorizeIndex({
-      method: 'GET', url: ctx.connection.authenticatedUrl(baseUrl), headers: { host: new URL(baseUrl).host },
-    }, {
-      writeHead: (_status, values) => { for (const [key, value] of Object.entries(values ?? {})) headers.set(key.toLowerCase(), value) },
-      end: () => undefined,
+    const cookie = 'codex-test-session=owner'
+    const connection = ctx.connection
+    if (!(connection instanceof Connection.HostConnectionService)) throw new Error('Expected real Host Connection')
+    const owner = connection.createPeer({ principal: { kind: 'owner' } })
+    connection.authentication.register({
+      authenticate: ({ headers }) => (headers instanceof Headers ? headers.get('cookie') : headers.cookie) === cookie
+        ? owner : undefined,
     })
-    const cookie = headers.get('set-cookie')?.split(';', 1)[0]
-    expect(cookie).toBeDefined()
     const namespace = 'codex-auth'
     const channel = '/api/' + namespace
     const dispose = registerAccountRoutes(ctx.connection, namespace, ['status'], createLoopbackRpcGuard(() => '127.0.0.1', delegate))
     const send = (body: unknown, authenticated = true, contentType = 'application/json', origin?: string) => fetch(baseUrl + channel + '/status', {
-      method: 'POST', headers: { 'content-type': contentType, ...(authenticated ? { cookie: cookie! } : {}), ...(origin ? { origin } : {}) },
+      method: 'POST', headers: { 'content-type': contentType, ...(authenticated ? { cookie } : {}), ...(origin ? { origin } : {}) },
       body: typeof body === 'string' ? body : JSON.stringify(body),
     })
     const envelope = { type: 'client-request', rpcId: 'account-status-test', method: namespace + '/status', payload: {} }
     expect((await send(envelope, false)).status).toBe(401)
     expect((await send(envelope, true, 'application/json', 'https://untrusted.example')).status).toBe(403)
     expect(delegate).not.toHaveBeenCalled()
-    const connection = ctx.connection
-    if (!(connection instanceof Connection.HostConnectionService)) throw new Error('Expected real Host Connection')
     const guest = connection.createPeer({ principal: { kind: 'codex-test-guest' } })
     const deniedGuest = await connection.createSharedFetchHandler('/api').fetch(new Request(baseUrl + channel + '/status', {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(envelope),

@@ -4,7 +4,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@deepseek-ai/cordis'
@@ -121,6 +121,17 @@ describe('CodexAuthService.usage()', () => {
       weeklyRemainingPercent: 49,
       weeklyResetAt: new Date(1787204616 * 1000).toISOString(),
     })
+  })
+
+  it('reads an active ChatGPT login while the Codex CLI lock file exists', async () => {
+    const accessToken = fakeJwt(Math.floor(Date.now() / 1000) + 3600, 'acct-1', 'pro')
+    await writeFile(authPath, JSON.stringify({ auth_mode: 'chatgpt', tokens: { access_token: accessToken } }))
+    await writeFile(`${authPath}.lock`, '')
+    const fetchMock = vi.fn(async () => new Response('{}'))
+
+    await expect(service(fetchMock).credential()).resolves.toEqual({ accessToken, accountId: 'acct-1', planType: 'pro' })
+    await expect(readFile(`${authPath}.lock`, 'utf8')).resolves.toBe('')
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('bounds a hung usage probe with a Host-owned timeout', async () => {

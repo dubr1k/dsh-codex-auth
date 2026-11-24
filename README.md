@@ -1,6 +1,6 @@
 # dsh-codex-auth
 
-> **DSH compatibility:** This candidate targets the coherent DSH **0.2.2-rc.1 / rc.2 / rc.3 / rc.4** graph with pi-ai **1.3.0**. Exact experimental peers reject older, mixed, and future graphs. Older Harness installations should retain a compatible older plugin release. See the [upgrade guide](docs/dsh-0.2.2-upgrade.md).
+> **DSH compatibility:** This release supports coherent DSH **0.2.2-rc.1 through rc.5** and **0.2.3-alpha.2** with verified pi-ai versions **1.3.0, 1.5.2, and 1.6.0**. Exact experimental peers reject older, mixed, and future graphs. Older Harness installations should retain a compatible older plugin release. See the [upgrade guide](docs/dsh-0.2.2-upgrade.md).
 
 [![npm rc version](https://img.shields.io/npm/v/dsh-codex-auth/rc.svg?label=npm%20rc)](https://www.npmjs.com/package/dsh-codex-auth)
 [![awesome · DSH plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
@@ -494,12 +494,7 @@ Above 2560×1440 is experimental. The settings field saves a valid size on blur
 or Enter; invalid input is not persisted. Deployment attachment limits still
 apply. See the [official image parameter guide](https://developers.openai.com/api/docs/guides/image-generation#size-and-quality-options).
 
-Codex endpoint behavior remains account/backend dependent. The September 9,
-2026 verification accepted generation and editing for both IDs, including
-`xhigh`/`max` edits, but returned 1254×1254 images even for explicit 1024×1024
-and 1536×864 requests. HTTP success does not establish that quality or size was
-honored. A valid image with different dimensions is retained and accompanied
-by an `IMAGE_SIZE_MISMATCH` warning containing the requested and actual sizes.
+The subscription endpoint treats the selected model, dimensions, quality, background, and count as requested values. On November 24, 2026, it returned an image for an unrecognized model ID and did not identify an effective model. Requests for 1024×1024 and 1024×1536 returned 1536×1024. A request for two images returned one. The gallery displays actual dimensions, and `IMAGE_SIZE_MISMATCH` reports requested and actual sizes when they differ.
 See [verification details](docs/gpt-image-2.5-compatibility.md).
 
 A successful `generate_image` result displays only the plugin-owned image gallery;

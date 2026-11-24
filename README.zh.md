@@ -1,6 +1,6 @@
 # dsh-codex-auth
 
-> **DSH 兼容性：** 此候选版本适配完整一致的 DSH **0.2.2-rc.1 / rc.2 / rc.3 / rc.4** 依赖图及 pi-ai **1.3.0**。实验性 peer 与运行时检查仍拒绝旧版、混合及未来版本，不添加兼容性豁免。旧 Harness 请保留相应旧插件。见[升级指南](docs/dsh-0.2.2-upgrade.md)。
+> **DSH 兼容性：** 此版本支持完整一致的 DSH **0.2.2-rc.1 至 rc.5** 和 **0.2.3-alpha.2**，以及已验证的 pi-ai **1.3.0、1.5.2 和 1.6.0**。实验性 peer 与运行时检查仍拒绝旧版、混合及未来版本，不添加兼容性豁免。旧 Harness 请保留相应旧插件。见[升级指南](docs/dsh-0.2.2-upgrade.md)。
 
 [![npm rc version](https://img.shields.io/npm/v/dsh-codex-auth/rc.svg?label=npm%20rc)](https://www.npmjs.com/package/dsh-codex-auth)
 [![awesome · DSH plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
@@ -27,6 +27,8 @@
 ## Codex SSE 请求
 
 Codex LLM 的 SSE 请求使用未压缩 JSON。适配器在 HTTP 发送前将 pi-ai 的 zstd 请求字节还原为相同 JSON，因为 Codex 后端可能以 `400 {"detail":"Bad Request"}` 拒绝压缩请求。模型、推理级别、加密回放数据、认证、取消和响应处理保持不变；不会重试被拒绝的请求，也不会修改 WebSocket 帧。
+
+订阅接口会接收所请求的图片模型、尺寸、质量、背景和数量。2026 年 11 月 24 日的实测中，无效模型 ID 仍生成图片，响应未报告实际模型。请求 1024×1024 或 1024×1536 均返回 1536×1024，请求两张图片只返回一张。
 
 ## 0.3.4-rc.5：GPT-6.2 和 DSH 0.2.2-rc.4
 

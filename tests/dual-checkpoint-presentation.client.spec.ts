@@ -7,7 +7,7 @@ import type {
   ClientModuleLoaderTarget,
   DshWindow,
 } from '@deepseek-ai/dsh-client-modules/client'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { createElement, type ComponentType } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { encodeCodexNativeCheckpoint } from '../src/native-checkpoint.ts'
@@ -169,7 +169,7 @@ async function loadStockClients(): Promise<{
         },
       ],
     },
-    staticModules,
+    staticModules: Object.entries(staticModules).map(([id, exports]) => ({ id, factory: () => exports })),
     loadBundle: async (url) => {
       if (url === CONVERSATION_URL) {
         await import('@deepseek-ai/dsh-client-ui-chat/client')
@@ -296,7 +296,7 @@ function renderTrajectoryCheckpoint(trajectoryClient: StockClientExports) {
   }))
 }
 
-function renderConversationCheckpoint(conversationClient: StockClientExports) {
+async function renderConversationCheckpoint(conversationClient: StockClientExports) {
   let compactionDefinition: ConversationDefinition | undefined
   let compactionView: unknown
   const registrationComplete = new Error('conversation registrations captured')
@@ -379,21 +379,25 @@ function renderConversationCheckpoint(conversationClient: StockClientExports) {
     state,
     matches: [summaryMatch, checkpointMatch],
   })
+  const openCompaction = vi.fn(async () => null)
   const rendered = render(createElement(compactionView as ComponentType<Record<string, unknown>>, {
     node,
+    useCompactionPreview: staticHook(true),
+    openCompaction,
     t: (key: string) => key,
   }))
   fireEvent.click(rendered.getByRole('button'))
+  expect(openCompaction).toHaveBeenCalledWith(summaryMatch.event.seq, expect.any(AbortSignal))
+  await waitFor(() => expect(rendered.getByRole('button').getAttribute('aria-busy')).toBe('false'))
   return rendered
 }
 
 describe('Dual Checkpoint stock client presentation', () => {
-  it('shows only Portable content in Conversation and Trajectory', async () => {
+  it('opens the summary by sequence and shows only Portable content in Trajectory', async () => {
     const clients = await loadStockClients()
-    const conversation = renderConversationCheckpoint(clients.conversation)
+    const conversation = await renderConversationCheckpoint(clients.conversation)
     const trajectory = renderTrajectoryCheckpoint(clients.trajectory)
 
-    expect(conversation.container.textContent).toContain('PORTABLE CONVERSATION SUMMARY')
     expect(trajectory.container.textContent).toContain('PORTABLE TRAJECTORY SUMMARY')
     const copyProjection = JSON.stringify(extractMarkdownPlainText.mock.calls)
     expect(copyProjection).toContain('PORTABLE')

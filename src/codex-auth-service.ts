@@ -119,6 +119,7 @@ interface CachedCredential {
  * package's dedicated Connection RPC channel is its only browser transport.
  */
 export class CodexAuthService extends Service {
+  private readonly authLockTarget: string
   private codexVersion: string | undefined
   private lastStatus: CodexAuthStatusView | undefined
   private readonly statusListeners = new Set<() => void>()
@@ -133,6 +134,8 @@ export class CodexAuthService extends Service {
 
   constructor(ctx: Context, private readonly options: CodexAuthServiceOptions) {
     super(ctx, 'codexAuth')
+    // Codex CLI owns auth.json.lock as a persistent advisory-lock file.
+    this.authLockTarget = `${options.authJsonPath}.dsh-codex-auth`
     this.probeCodex()
     this.ctx.effect(() => () => this.disposeOperations(), 'codex-auth: operations')
   }
@@ -314,7 +317,7 @@ export class CodexAuthService extends Service {
       // OAuth round trip happens OUTSIDE the lock (phase 2), so a slow token
       // endpoint never blocks other credential readers or the background
       // refresher behind the lock's 2-second contention deadline.
-      const decision = await withFileLock(this.options.authJsonPath, () => this.decideRefreshLocked())
+      const decision = await withFileLock(this.authLockTarget, () => this.decideRefreshLocked())
       if (isAborted(signal)) return undefined
       if (decision.mode === 'absent') {
         this.publishStatus(statusFromFile(decision.file, this.available, this.codexVersion, this.options.credentialRef))
@@ -329,7 +332,7 @@ export class CodexAuthService extends Service {
         const reply = await refreshTokens(decision.refreshToken, this.options.fetchImpl ?? fetch, signal)
         if (isAborted(signal)) return undefined
         const adopted = await withFileLock(
-          this.options.authJsonPath,
+          this.authLockTarget,
           () => this.adoptRefreshedLocked(decision.snapshot.file, reply, signal),
         )
         if (isAborted(signal) || adopted === undefined) return undefined
@@ -516,7 +519,7 @@ export class CodexAuthService extends Service {
     let retry = false
     try {
       if (isAborted(signal)) return
-      const decision = await withFileLock(this.options.authJsonPath, () => this.decideRefreshLocked())
+      const decision = await withFileLock(this.authLockTarget, () => this.decideRefreshLocked())
       if (isAborted(signal)) return
       if (decision.mode === 'absent') {
         this.publishStatus(statusFromFile(decision.file, this.available, this.codexVersion, this.options.credentialRef))
@@ -533,7 +536,7 @@ export class CodexAuthService extends Service {
         const reply = await refreshTokens(decision.refreshToken, this.options.fetchImpl ?? fetch, signal)
         if (isAborted(signal)) return
         const adopted = await withFileLock(
-          this.options.authJsonPath,
+          this.authLockTarget,
           () => this.adoptRefreshedLocked(decision.snapshot.file, reply, signal),
         )
         if (isAborted(signal)) return

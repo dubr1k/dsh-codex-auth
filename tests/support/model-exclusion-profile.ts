@@ -39,7 +39,7 @@ export function modelExclusionProfileFixture(name: string) {
   writeFileSync(join(dir, 'cordis.yml'), '[]\n')
   const profile: ProfileContext = {
     name, dir, patchPath: join(dir, 'cordis.patch.yml'), installAnchor: join(home, 'package.json'),
-    home, cwd: home, startedBundles: ['synthetic-codex-bundle'], overlays: [], telemetryDisabledEnv: undefined,
+    home, cwd: home, startedBundles: ['synthetic-codex-bundle'], overlayPaths: [], telemetryDisabledEnv: undefined,
   }
   const start = async () => {
     const ctx = await boot('synthetic-codex', join(dir, 'cordis.yml'), readProfilePatches('synthetic-codex', profile), ctx => {

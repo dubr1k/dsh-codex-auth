@@ -1,56 +1,18 @@
 # DSH source compatibility verification
 
-The current candidate targets DSH `0.2.2-rc.1` and pi-ai `1.3.0`. Both the registry
-baseline and the source verification target use this exact coherent graph.
-Cordis is pinned to `4.1.0` and Schemastery to `3.19.0`.
-See [the upgrade guide](dsh-0.2.2-upgrade.md) for runtime changes and verification limits.
-The records below describe previous releases, not the current compatibility range.
+The registry check uses DSH `0.2.3-alpha.2`, Cordis `4.2.0-alpha.1`, Schemastery `3.20.0-alpha.1`, and pi-ai `1.6.0`. The original signed Desktop ships pi-ai `1.3.0`.
 
-## Build the official artifacts once
-
-Use a scratch directory outside the plugin checkout and any live DSH installation:
+Run `pnpm install --frozen-lockfile` and `pnpm run check` from this checkout with Node `24.22.3`. To check the fork artifacts, pass the packed DSH and vendor package directories together in one scratch directory and the matching Pi patch:
 
 ```sh
-git clone --depth 1 --branch dsh-v0.2.2-rc.1 https://github.com/deepseek-ai/deepseek-harness.git harness
-cd harness
-git rev-parse HEAD
-# Must be 66491b05e3f05ad35bcdd4f6cd7ed26041d9e3db.
-PNPM_CONFIG_MINIMUM_RELEASE_AGE=0 pnpm install --frozen-lockfile --ignore-scripts
-pnpm run build:lib
-pnpm --filter './packages/**' --filter './vendor/*' -r pack --pack-destination ../dsh-packages
+pnpm run check:dsh-source -- /absolute/path/to/dsh-packages /absolute/path/to/harness/patches/@earendil-works__pi-ai@1.6.0.patch
 ```
 
-The Host and Client library build is required. Packing does not publish anything.
-
-## Check this plugin
-
-From the plugin checkout:
-
-```sh
-pnpm install --frozen-lockfile
-pnpm run check
-pnpm run check:dsh-source -- /absolute/path/to/dsh-packages /absolute/path/to/harness/patches/@earendil-works__pi-ai@1.5.2.patch
-```
-
-The source runner copies the plugin to a temporary directory, reads supplied
-package manifests, rejects mixed DSH versions, and supplies the complete
-DSH dependency/peer closure. It verifies the official pi-ai patch SHA-256
-`4e1c90fd00aea42989664504668633033c1962e53c07860901edb4f72d843765`,
-applies that patch in the isolated graph, and records artifact checksums.
-It then runs the complete package gate. Local overrides and temporary paths
-never enter a published package or user profile. Checksums identify the supplied
-bytes; the fixed-tag build recipe establishes their provenance.
-
-The optional source-artifact gate requires a complete tagged-source build;
-registry tests and a packaged Desktop Host smoke are separate evidence and
-must not be represented as a completed source-artifact gate.
+The source runner validates the dependency graph and the patch checksum, then tests an isolated copy. Registry checks, source checks, and real account tests establish different results. Published artifacts contain no account credentials.
 
 ## 中文说明
 
-当前候选版本以 DSH `0.2.2-rc.1`、pi-ai `1.3.0`、Cordis `4.1.0` 和
-Schemastery `3.19.0` 的一致依赖图为基线。源码验证脚本要求上面固定 tag 的
-完整构建制品及准确的 Desktop pi-ai 补丁，并在临时目录内运行全部检查。
-旧版验证记录不代表当前候选版本支持旧运行时。离线检查不证明真实 OAuth、搜索或图片后端可用。
+注册表验证使用 DSH `0.2.3-alpha.2`、Cordis `4.2.0-alpha.1`、Schemastery `3.20.0-alpha.1` 和 pi-ai `1.6.0`。官方签名桌面版使用 pi-ai `1.3.0`。源码验证使用相同分支的 DSH、vendor 包和对应的 pi-ai 补丁，在临时目录运行测试。
 
 ## Historical release verification
 

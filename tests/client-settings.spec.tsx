@@ -176,9 +176,9 @@ describe('Codex Capability Bundle settings', () => {
       llmScope={fakeScope(LLM).scope} searchScope={fakeScope(SEARCH).scope} imageScope={image.scope} />)
     await screen.findByText('Active')
     fireEvent.click(screen.getByRole('button', { name: 'Expand Image Creation settings' }))
-    const modelOptions = (screen.getByRole('combobox', { name: 'Image model' }) as HTMLSelectElement).options
+    const modelOptions = (screen.getByRole('combobox', { name: 'Requested image model' }) as HTMLSelectElement).options
     expect(Array.from(modelOptions ?? [], option => option.value)).toContain('gpt-image-2.5-flare')
-    fireEvent.change(screen.getByLabelText('Image model'), { target: { value: 'gpt-image-2.5-flare' } })
+    fireEvent.change(screen.getByLabelText('Requested image model'), { target: { value: 'gpt-image-2.5-flare' } })
     await waitFor(() => expect(image.set).toHaveBeenCalledWith('model', 'gpt-image-2.5-flare'))
     fireEvent.change(screen.getByLabelText('Default quality'), { target: { value: 'max' } })
     await waitFor(() => expect(image.set).toHaveBeenCalledWith('quality', 'max'))
@@ -189,7 +189,7 @@ describe('Codex Capability Bundle settings', () => {
     fireEvent.change(size, { target: { value: '1536x864' } })
     fireEvent.blur(size)
     await waitFor(() => expect(image.set).toHaveBeenCalledWith('size', '1536x864'))
-    fireEvent.change(screen.getByLabelText('Image model'), { target: { value: 'gpt-image-2' } })
+    fireEvent.change(screen.getByLabelText('Requested image model'), { target: { value: 'gpt-image-2' } })
     await waitFor(() => expect(image.set).toHaveBeenCalledWith('model', 'gpt-image-2'))
     expect((screen.getByRole('option', { name: 'Maximum' }) as HTMLOptionElement).disabled).toBe(true)
   })

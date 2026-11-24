@@ -163,8 +163,8 @@ describe('Codex Native Checkpoint codec', () => {
 
   it('pins replay to the observed DSH and pi-ai conversion pair', () => {
     expect(CODEX_NATIVE_REPLAY_COMPATIBILITY).toEqual({
-      dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4 || 0.2.2-rc.5',
-      piAi: '1.5.2',
+      dsh: '0.2.2-rc.1 || 0.2.2-rc.2 || 0.2.2-rc.3 || 0.2.2-rc.4 || 0.2.2-rc.5 || 0.2.3-alpha.2',
+      piAi: '1.6.0',
     })
     expect(isCodexNativeReplayRuntimeCompatible()).toBe(true)
     expect(isCodexNativeReplayRuntimeCompatible({
@@ -179,6 +179,9 @@ describe('Codex Native Checkpoint codec', () => {
     })).toBe(false)
     expect(isCodexNativeReplayRuntimeCompatible({
       dshLlm: '0.2.2-rc.5', dshPiAi: '0.2.2-rc.5', piAi: '1.5.2',
+    })).toBe(true)
+    expect(isCodexNativeReplayRuntimeCompatible({
+      dshLlm: '0.2.3-alpha.2', dshPiAi: '0.2.3-alpha.2', piAi: '1.6.0',
     })).toBe(true)
     for (const piAi of ['0.84.2', '0.87.1', '1.1.1', '1.5.3']) {
       expect(isCodexNativeReplayRuntimeCompatible({
@@ -556,7 +559,8 @@ function registerPiAiAdapter(ctx: Context): { readonly provider: string; readonl
     maxRequestImages: 50,
     imageOffloadCountQuantum: 10,
     requestImagePixelBudget: 640_000,
-    requestImageMaxBytes: 20 * 1024 * 1024,
+    requestImageBudgetCount: 20,
+    maxImageBytes: 20 * 1024 * 1024,
     retryPolicy: resolveRetryPolicy(undefined, 'foreign pi-ai fixture'),
     piProvider,
     configuredMaxTokens: new Map(),
@@ -722,7 +726,7 @@ describe('Codex Native Checkpoint replay', () => {
       provenance: { ...compatibleCheckpoint().provenance, model },
       compatibilityDigest: codexNativeCheckpointCompatibilityDigest({
         provider: 'openai-codex', model, accountHash: ACCOUNT_HASH,
-        instructions: String(captured.instructions), tools: captured.tools ?? null,
+        instructions: SYSTEM, tools: captured.tools ?? null,
         parallelToolCalls: captured.parallel_tool_calls === true, toolChoice: captured.tool_choice ?? null,
         reasoning: captured.reasoning ?? null, text: captured.text ?? null, serviceTier: captured.service_tier ?? null,
       }),
@@ -755,7 +759,8 @@ describe('Codex Native Checkpoint replay', () => {
     const before = JSON.stringify(options)
     await drain(ctx.llm.stream(options))
     expect(payloads).toHaveLength(1)
-    expect(payloads[0]).toMatchObject({ instructions: SYSTEM, input: expect.arrayContaining([
+    expect(payloads[0]).toMatchObject({ input: expect.arrayContaining([
+      { role: 'developer', content: SYSTEM },
       { role: 'developer', content: 'UPDATED IN-HISTORY DIRECTIVE' },
     ]) })
     expect(JSON.stringify(payloads[0])).toContain(JSON.stringify(PORTABLE_TEXT))
@@ -891,6 +896,7 @@ describe('Codex Native Checkpoint replay', () => {
     expect(payloads).toHaveLength(1)
     const payload = payloads[0] as { input?: unknown[] }
     expect(payload.input).toEqual([
+      { role: 'developer', content: SYSTEM },
       {
         role: 'user',
         content: [{ type: 'input_text', text: 'before checkpoint' }],
@@ -978,6 +984,7 @@ describe('Codex Native Checkpoint replay', () => {
 
     const payload = payloads[0] as { input?: unknown[] }
     expect(payload.input).toEqual([
+      { role: 'developer', content: SYSTEM },
       {
         role: 'user',
         content: [{ type: 'input_text', text: 'before checkpoint' }],
@@ -1046,11 +1053,15 @@ describe('Codex Native Checkpoint replay', () => {
     for (const { options } of cases) await drain(ctx.llm.stream(options))
 
     expect(payloads).toHaveLength(cases.length)
-    for (const [index, payload] of (payloads as Array<{ input?: unknown[] }>).entries()) {
-      expect(payload.input).toEqual([{
-        role: 'user',
-        content: [{ type: 'input_text', text: cases[index]!.portableText }],
-      }])
+    for (const [index, payload] of (payloads as Array<{
+      input: [{ role: string; content: string }, { role: string; content: { type: string; text: string }[] }]
+    }>).entries()) {
+      expect(payload.input).toHaveLength(2)
+      const [system, portable] = payload.input
+      expect(system).toEqual({ role: 'developer', content: SYSTEM })
+      expect(portable.role).toBe('user')
+      expect(portable.content.every(part => part.type === 'input_text')).toBe(true)
+      expect(portable.content.map(part => part.text).join('')).toBe(cases[index]!.portableText)
       expect(JSON.stringify(payload)).not.toContain('opaque-native-state')
       expect(JSON.stringify(payload)).not.toContain('unexpected mixture')
     }
@@ -1121,7 +1132,7 @@ describe('Codex Native Checkpoint replay', () => {
       await drain(ctx.llm.stream(replayOptions(checkpoint)))
 
       const payload = payloads[0] as { input?: unknown[] }
-      expect(payload.input?.[1]).toEqual({
+      expect(payload.input?.[2]).toEqual({
         role: 'user',
         content: [{ type: 'input_text', text: PORTABLE_TEXT }],
       })
@@ -1144,6 +1155,7 @@ describe('Codex Native Checkpoint replay', () => {
 
     const payload = payloads[0] as { input?: unknown[] }
     expect(payload.input).toEqual([
+      { role: 'developer', content: SYSTEM },
       {
         role: 'user',
         content: [{ type: 'input_text', text: 'before checkpoint' }],

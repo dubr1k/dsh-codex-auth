@@ -6,7 +6,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { isPlainJsonTree, serializedJsonBytes } from './json-tree.ts'
+import { isPlainJsonTree, isPlainRecord, serializedJsonBytes } from './json-tree.ts'
 import { installedPackageVersion } from './package-version.ts'
 import { CURRENT_PI_AI_VERSION, isSupportedDshGraph, isSupportedPiAiVersion, SUPPORTED_DSH_PEER_RANGE } from './runtime-compatibility.ts'
 
@@ -45,6 +45,20 @@ export function isCodexNativeReplayRuntimeCompatible(
 ): boolean {
   return isSupportedDshGraph([actual.dshLlm, actual.dshPiAi])
     && isSupportedPiAiVersion(actual.piAi)
+}
+
+/** Read the initial system prompt in either supported Codex Responses representation. */
+export function readCodexInstructions<Item>(input: readonly Item[], instructions: unknown): {
+  instructions: string
+  history: readonly Item[]
+  leadingDeveloper?: Item
+} | undefined {
+  if (typeof instructions === 'string') return { instructions, history: input }
+  if (instructions !== undefined) return undefined
+  const [first, ...history] = input
+  if (!isPlainRecord(first) || first.role !== 'developer' || typeof first.content !== 'string'
+    || Object.keys(first).length !== 2) return { instructions: '', history: input }
+  return { instructions: first.content, history, leadingDeveloper: first }
 }
 
 /** Lossless JSON values accepted by the checkpoint carrier. */

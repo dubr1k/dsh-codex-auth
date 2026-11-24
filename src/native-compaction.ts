@@ -17,6 +17,7 @@ import {
   codexNativeCheckpointCompatibilityDigest,
   encodeCodexNativeCheckpoint,
   hashCodexAccountIdentity,
+  readCodexInstructions,
 } from './native-checkpoint.ts'
 import type {
   CodexNativeCheckpointBlock,
@@ -643,7 +644,6 @@ function deriveNativeRequest(
   instructionText: string,
 ): NativeRequest | undefined {
   if (captured.model !== expectedModel
-    || typeof captured.instructions !== 'string'
     || !Array.isArray(captured.input)
     || captured.input.length < 2
     || typeof captured.parallel_tool_calls !== 'boolean'
@@ -655,7 +655,9 @@ function deriveNativeRequest(
     || (captured.prompt_cache_key !== undefined && typeof captured.prompt_cache_key !== 'string')) {
     return undefined
   }
-  const input = captured.input.map(cloneJson)
+  const system = readCodexInstructions(captured.input, captured.instructions)
+  if (system === undefined) return undefined
+  const input = system.history.map(cloneJson)
   const finalItem = input.pop()
   if (!isCapturedCompactionInstruction(finalItem, instructionText)
     || input.length === 0
@@ -669,8 +671,8 @@ function deriveNativeRequest(
   const serviceTier = captured.service_tier ?? null
   const body: Record<string, JsonValue> = {
     model: expectedModel,
-    input: [...input, { type: 'compaction_trigger' }],
-    instructions: captured.instructions,
+    input: [...system.leadingDeveloper === undefined ? [] : [system.leadingDeveloper], ...input, { type: 'compaction_trigger' }],
+    ...system.leadingDeveloper === undefined ? { instructions: system.instructions } : {},
     ...(captured.tools === undefined ? {} : { tools }),
     parallel_tool_calls: captured.parallel_tool_calls,
     tool_choice: 'auto',
@@ -687,7 +689,7 @@ function deriveNativeRequest(
   return {
     body,
     semanticInput: {
-      instructions: captured.instructions,
+      instructions: system.instructions,
       tools,
       parallelToolCalls: captured.parallel_tool_calls,
       toolChoice: 'auto',
@@ -726,7 +728,8 @@ function containsUnmodeledHistory(value: JsonValue): boolean {
   if (Array.isArray(value)) return value.some(containsUnmodeledHistory)
   if (!isPlainRecord(value)) return false
   const record = value as Record<string, JsonValue>
-  return record.type === 'additional_tools'
+  return record.type === 'configuration_update'
+    || record.type === 'additional_tools'
     || record.type === 'tool_search_call'
     || record.type === 'tool_search_output'
     || record.role === 'system'

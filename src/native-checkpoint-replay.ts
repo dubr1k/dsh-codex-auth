@@ -25,6 +25,7 @@ import {
   decodeCodexNativeCheckpoint,
   hashCodexAccountIdentity,
   isCodexNativeReplayRuntimeCompatible,
+  readCodexInstructions,
 } from './native-checkpoint.ts'
 import type {
   CodexNativeCheckpointCompatibilityInput,
@@ -474,20 +475,19 @@ function compatibilityInput(
   accountHash: string,
   payload: Record<string, unknown>,
 ): CodexNativeCheckpointCompatibilityInput | undefined {
-  // pi-ai 1.1.0 can encode deferred tools and mid-conversation instructions in
-  // input history, outside the v1 digest's top-level tools/instructions. Keep
-  // these requests Portable until a future codec models the ordered changes.
-  if (containsUnmodeledHistory(payload.input)
+  // The v1 digest covers the initial instructions and top-level tools. Ordered
+  // changes in the remaining input require the Portable representation.
+  const system = Array.isArray(payload.input) ? readCodexInstructions(payload.input, payload.instructions) : undefined
+  if (system === undefined || containsUnmodeledHistory(system.history)
     || typeof payload.model !== 'string'
     || payload.model.length === 0
-    || typeof payload.instructions !== 'string'
     || typeof payload.parallel_tool_calls !== 'boolean') return undefined
   try {
     return {
       provider: scope.provider,
       model: payload.model,
       accountHash,
-      instructions: payload.instructions,
+      instructions: system.instructions,
       tools: jsonOrNull(payload.tools),
       parallelToolCalls: payload.parallel_tool_calls,
       toolChoice: jsonOrNull(payload.tool_choice),
@@ -503,7 +503,8 @@ function compatibilityInput(
 function containsUnmodeledHistory(value: unknown): boolean {
   if (Array.isArray(value)) return value.some(containsUnmodeledHistory)
   if (!isRecord(value)) return false
-  return value.type === 'additional_tools'
+  return value.type === 'configuration_update'
+    || value.type === 'additional_tools'
     || value.type === 'tool_search_call'
     || value.type === 'tool_search_output'
     || value.role === 'system'

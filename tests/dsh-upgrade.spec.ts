@@ -40,7 +40,7 @@ function profileFixture() {
   const profile: ProfileContext = {
     name: 'synthetic-upgrade', dir, patchPath: join(dir, 'cordis.patch.yml'),
     installAnchor: join(dir, 'package.json'), cwd: dir, home: dir,
-    startedBundles: [], overlays: [], telemetryDisabledEnv: undefined,
+    startedBundles: [], overlayPaths: [], telemetryDisabledEnv: undefined,
   }
   ctx.provide('profileContext', profile)
   const packageDir = join(dir, 'node_modules', manifest.name)
@@ -84,7 +84,7 @@ it('disables released 0.3.3-rc.4 on the verified runtime despite an old exact-ve
 
 it('admits all adapted bundle rows without a grant or rewriting synthetic settings and login state', async () => {
   const fixture = profileFixture()
-  expect(['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3']).toContain(targetRuntime)
+  expect(['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.3-alpha.2']).toContain(targetRuntime)
   writeFileSync(join(fixture.packageDir, 'package.json'), JSON.stringify(manifest))
   const files = {
     'settings.yaml': 'codex-llm:\n  longContextEnabled: true\n',
@@ -172,7 +172,7 @@ it('reproduces the published single-RC installation rejection and accepts the ad
   const rejected = evaluatePluginCompatibility(singleRcRelease.manifest, {}, '0.2.1-rc.2')
   expect(Object.keys(rejected?.requirements ?? {}).sort()).toEqual([...exactPeers].sort())
   expect(rejected?.exempted).toBe(false)
-  for (const runtime of ['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.4', '0.2.2-rc.5']) {
+  for (const runtime of ['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.4', '0.2.2-rc.5', '0.2.3-alpha.2']) {
     expect(evaluatePluginCompatibility(manifest, {}, runtime)).toBeUndefined()
   }
 })

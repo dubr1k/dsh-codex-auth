@@ -181,7 +181,7 @@ function createGenerateImageTool(options: CodexImageToolOptions): ToolDefinition
             ],
           },
         },
-        model: { type: 'string', description: 'Optional image-model override.' },
+        model: { type: 'string', description: 'Requested image model ID. The subscription service may apply a fallback and does not report the model it used.' },
         n: { type: 'integer', minimum: 1, maximum: MAX_GENERATED_IMAGES },
         size: { type: 'string', description: 'auto or WIDTHxHEIGHT. Custom sizes require GPT Image 2.5: multiples of 16, aspect ratio 1:3 to 3:1, each edge at most 3840, total pixels 655360–8294400. Above 2560x1440 is experimental.' },
         quality: { type: 'string', enum: [...IMAGE_QUALITIES] },

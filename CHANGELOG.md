@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.4-rc.9]
+
+- Describe image model, size, quality, and count as subscription request preferences.
+- Read existing ChatGPT logins with Codex CLI versions that keep `auth.json.lock` on disk. The plugin coordinates its own writes with a separate lock.
+- Support DeepSeek Harness 0.2.3-alpha.2 with pi-ai 1.3.0 (signed Desktop) or 1.6.0 (fork build).
+
 ## [0.3.4-rc.8]
 
 - Resolve the current WebServer bind when handling Codex account requests. Fast and quota controls work when Desktop starts the loopback listener after the plugin.

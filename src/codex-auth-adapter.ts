@@ -26,6 +26,7 @@
  */
 
 import { codexJsonFetch } from './codex-transport.ts'
+import { isPlainRecord } from './json-tree.ts'
 import { builtinProviders } from '@earendil-works/pi-ai/providers/all'
 import type {
   Api, ApiKeyAuth, AuthContext, CredentialStore, Model, Provider, StreamOptions,
@@ -212,7 +213,10 @@ function codexProvider(
     name: displayName,
     ...base.baseUrl === undefined ? {} : { baseUrl: base.baseUrl },
     auth: { ...base.auth, apiKey: harnessApiKeyAuth(displayName) },
-    getModels: () => applyCodexContextPolicy(base.getModels(), settings()),
+    // Native checkpoint compatibility includes top-level reasoning.effort.
+    getModels: () => applyCodexContextPolicy(base.getModels(), settings()).map(model => ({
+      ...model, compat: { ...model.compat, supportsMidConvoEffort: false },
+    })),
     // Delegated rather than copied: the catalog provider stays the receiver,
     // so an implementation holding state on itself keeps working.
     stream: (model, context, options) => base.stream(
@@ -259,17 +263,20 @@ function withReplayPayload<
   const previous = composePayloadCallbacks(configured, options?.onPayload)
   const restored = replay.payloadCallback(previous)
   const observed = codexNativeCompactionCoordinator.payloadCallback(restored)
-  // streamSimple drops provider-specific options in pi-ai 1.3.0. Use the
-  // shared payload seam before replay compatibility and Native capture so
-  // both stream entry points see the same tier. Read once per dispatch;
-  // existing explicit payload hooks retain their final say.
-  const onPayload: CodexProviderPayloadCallback | undefined = fastTier !== undefined
-    ? (payload, model) => {
-        const fast = { ...(payload as Record<string, unknown>), service_tier: fastTier }
-        return observed === undefined ? fast : observed(fast, model)
-      }
-    : observed
-  return (onPayload === undefined ? options : { ...options, onPayload }) as Options
+  const onPayload: CodexProviderPayloadCallback = async (payload, model) => {
+    if (!isPlainRecord(payload)) return observed?.(payload, model)
+    const reasoning = payload.reasoning
+    // Off has no reasoning to summarize. Preserve the request controls bound to existing checkpoints.
+    const off = isPlainRecord(reasoning) && reasoning.effort === 'none' && reasoning.summary === 'auto'
+      && Object.keys(reasoning).length === 2
+    const effective = {
+      ...payload,
+      ...off ? { reasoning: { effort: 'none' } } : {},
+      ...fastTier === undefined ? {} : { service_tier: fastTier },
+    }
+    return (await observed?.(effective, model)) ?? effective
+  }
+  return { ...options, onPayload } as Options
 }
 
 function composePayloadCallbacks(
@@ -310,7 +317,7 @@ export class CodexAuthAdapter extends PiAiAdapter {
       options.onPayload,
       options.fastModeForSession,
     )
-    const profile: ResolvedPiAiProviderProfile = {
+    const profile = {
       modelErrors: new Map(),
       provider: CODEX_ROUTE,
       displayName: options.displayName,
@@ -318,7 +325,9 @@ export class CodexAuthAdapter extends PiAiAdapter {
       maxRequestImageBytes: MAX_REQUEST_IMAGE_BYTES,
       maxRequestImages: 50,
       imageOffloadCountQuantum: 10,
+      requestImageBudgetCount: 15,
       requestImagePixelBudget: REQUEST_IMAGE_PIXEL_BUDGET,
+      maxImageBytes: REQUEST_IMAGE_MAX_BYTES,
       requestImageMaxBytes: REQUEST_IMAGE_MAX_BYTES,
       retryPolicy: resolveRetryPolicy(undefined, `llm-codex-auth: provider "${CODEX_ROUTE}" retryPolicy`),
       piProvider: catalogProvider,
@@ -326,7 +335,7 @@ export class CodexAuthAdapter extends PiAiAdapter {
       transport: options.transport,
       websocketConnectTimeoutMs: options.websocketConnectTimeoutMs,
       timeoutMs: options.timeoutMs,
-    }
+    } satisfies ResolvedPiAiProviderProfile & { requestImageMaxBytes: number }
     const profiles: ReadonlyMap<string, ResolvedPiAiProviderProfile> = new Map([[CODEX_ROUTE, profile]])
     super({
       profiles: () => profiles,
