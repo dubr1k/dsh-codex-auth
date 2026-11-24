@@ -16,7 +16,7 @@
   min-width: 0;
 }
 
-.field :is(input, select, textarea) {
+.field textarea {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -26,34 +26,21 @@
   color: inherit;
   background: var(--dsw-alias-interactive-bg-hover);
   font: inherit;
-}
-
-.field textarea {
   resize: vertical;
 }
 
-.group {
+.checkbox {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
-  padding: 0;
+  width: fit-content;
+}
+
+.checkbox input {
   margin: 0;
-  border: 0;
-  min-width: 0;
+  accent-color: var(--dsw-alias-brand-primary);
 }
 
-.group legend {
-  margin-bottom: 6px;
-  padding: 0;
-}
-
-.choices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.choices button,
 .primary {
   min-height: 32px;
   padding: 6px 10px;
@@ -63,11 +50,6 @@
   background: var(--dsw-alias-interactive-bg-hover);
   font: inherit;
   cursor: pointer;
-}
-
-.choices button[aria-pressed='true'] {
-  border-color: var(--dsw-alias-brand-primary);
-  box-shadow: inset 0 0 0 1px var(--dsw-alias-brand-primary);
 }
 
 .panel :disabled {
@@ -80,13 +62,11 @@
   outline-offset: 2px;
 }
 
-.hint {
+.error {
   margin: 0;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 12px;
 }
 
 @media (pointer: coarse) {
-  .field :is(input, select, textarea) { font-size: 16px; }
-  .choices button, .primary { min-height: 44px; }
+  .field textarea { font-size: 16px; }
+  .checkbox, .primary { min-height: 44px; }
 }

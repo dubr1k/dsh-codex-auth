@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.4-rc.10]
+
+- Simplify subscription image creation and editing to a description and a transparent-background option. Specify the aspect ratio in the description and view actual dimensions in the gallery.
+- Keep an Image Creation switch in GPT Auth settings. Existing Host configuration and tool arguments still load.
+
 ## [0.3.4-rc.9]
 
 - Describe image model, size, quality, and count as subscription request preferences.

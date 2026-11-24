@@ -16,10 +16,9 @@ describe('generated image turn artifacts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit image' }))
     expect(edit).not.toHaveBeenCalled()
     fireEvent.change(screen.getByLabelText('Describe the changes'), { target: { value: 'Blue cup' } })
-    fireEvent.click(screen.getByRole('button', { name: '1536×1024' }))
     fireEvent.click(screen.getByRole('button', { name: 'Add to message' }))
     expect(edit).toHaveBeenCalledWith(image, expect.stringContaining('image:sha256:cat'))
-    expect(edit).toHaveBeenCalledWith(image, expect.stringContaining('1536x1024'))
+    expect(edit).toHaveBeenCalledWith(image, expect.stringContaining('Blue cup'))
   })
 
   it('reports refusal to prepare a draft', () => {

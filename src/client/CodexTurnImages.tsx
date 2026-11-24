@@ -5,7 +5,6 @@ import type { ConversationNodeDefinition } from '@deepseek-ai/dsh-client-ui-conv
 import { CodexImageGallery } from './CodexImageGallery.tsx'
 import type { ImageLoader } from './CodexImageGallery.tsx'
 import { ImageRequestPanel } from './ImageRequestPanel.tsx'
-import type { ImageRequestChoices } from './ImageRequestPanel.tsx'
 import type { CodexAuthKey } from './locales.ts'
 import classes from './CodexImageGallery.module.css'
 
@@ -73,11 +72,10 @@ function isImageReference(value: unknown): value is ImageAttachmentRef {
  * @param props Generated outputs, authorized loader, draft action and localized copy.
  * @returns Gallery with one edit action per image, or null for an empty turn.
  */
-export function CodexTurnImages({ images, loadImage, editImage, initial, t }: {
+export function CodexTurnImages({ images, loadImage, editImage, t }: {
   images: readonly ImageAttachmentRef[]
   loadImage: ImageLoader
   editImage: (image: ImageAttachmentRef, prompt: string) => boolean
-  initial?: ImageRequestChoices
   t: (key: CodexAuthKey) => string
 }) {
   const [editing, setEditing] = useState<string>()
@@ -96,7 +94,7 @@ export function CodexTurnImages({ images, loadImage, editImage, initial, t }: {
         onClick={() => { setEditing(editing === String(image.attachmentId) ? undefined : String(image.attachmentId)) }}>{t('editImage')}</button>
       </div>
       {editing === String(image.attachmentId) && <div className={classes.editControls}>
-        <ImageRequestPanel image={image} {...initial === undefined ? {} : { initial }}
+        <ImageRequestPanel image={image}
           prepare={prompt => editImage(image, prompt)} onPrepared={() => { setEditing(undefined) }} t={t} />
       </div>}
     </div>)}

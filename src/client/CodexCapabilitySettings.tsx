@@ -7,7 +7,6 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { CodexAuthRpcClient, CodexAuthStatusView, CodexUsageView } from '../rpc-contract.ts'
 import type { CodexAuthKey } from './locales.ts'
-import { IMAGE_MODELS, IMAGE_SIZES, isImageSize, supportsImageQuality, supportsImageSize } from '../image-options.ts'
 import type { ImageQuality, ImageSize } from '../image-options.ts'
 import classes from './CodexCapabilitySettings.module.css'
 
@@ -63,9 +62,7 @@ export function CodexCapabilitySettings({
   const [refreshBusy, setRefreshBusy] = useState(false)
   const [tick, setTick] = useState(0)
   const [searchExpanded, setSearchExpanded] = useState(false)
-  const [imageExpanded, setImageExpanded] = useState(false)
   const searchRegionId = useId()
-  const imageRegionId = useId()
   const llm = useScope(llmScope)
   const search = useScope(searchScope)
   const image = useScope(imageScope)
@@ -259,7 +256,7 @@ export function CodexCapabilitySettings({
         </article>
 
         {/* Image Creation Card */}
-        <article className={classes.card} data-collapsed={!imageExpanded}>
+        <article className={classes.card}>
           <CardHeading
             title={t('imageCardTitle')}
             intro={t('imageCardIntro')}
@@ -271,38 +268,20 @@ export function CodexCapabilitySettings({
                   ? t('unavailableFree')
                   : undefined}
             tone={!status?.configured || status.planType?.toLowerCase() === 'free' ? 'warning' : 'neutral'}
-            action={(
-              <>
-                {image.value === undefined ? null : (
-                  <Switch
-                    label={t('enableImage')}
-                    checked={image.value.enabled}
-                    disabled={!image.writable || imageUnavailable}
-                    onChange={next => { void writer(imageScope, setError, t)('enabled', next) }}
-                  />
-                )}
-                <DisclosureButton
-                  expanded={imageExpanded}
-                  controls={imageRegionId}
-                  label={imageExpanded ? t('collapseImage') : t('expandImage')}
-                  onClick={() => { setImageExpanded(value => !value) }}
-                />
-              </>
+            action={image.value === undefined ? null : (
+              <Switch
+                label={t('enableImage')}
+                checked={image.value.enabled}
+                disabled={!image.writable || imageUnavailable}
+                onChange={next => { void writer(imageScope, setError, t)('enabled', next) }}
+              />
             )}
           />
-          <CollapsibleRegion id={imageRegionId} expanded={imageExpanded}>
-            <SettingsState snapshot={image} t={t}>
-              {image.value === undefined ? null : (
-                <ImageControls
-                  scope={imageScope}
-                  snapshot={image}
-                  t={t}
-                  unavailable={imageUnavailable}
-                  onError={setError}
-                />
-              )}
-            </SettingsState>
-          </CollapsibleRegion>
+          {image.status === 'loading' ? (
+            <p className={classes.loading} role="status" aria-busy="true">{t('settingsLoading')}</p>
+          ) : image.status === 'unavailable' || image.value === undefined ? (
+            <p className={classes.loading}>{t('settingsUnavailable')}</p>
+          ) : null}
         </article>
       </div>
 
@@ -623,75 +602,6 @@ function SearchControls({
       </Control>
       <Control label={t('maxOutputTokens')}>
         <input aria-label={t('maxOutputTokens')} type="number" min={1} step={1} value={value.maxOutputTokens} disabled={disabled} onChange={event => { void write('maxOutputTokens', Number(event.target.value)) }} />
-      </Control>
-    </div>
-  )
-}
-
-function ImageControls({
-  scope,
-  snapshot,
-  t,
-  unavailable,
-  onError,
-}: {
-  scope: ConfigForm<ImageSettingsView>
-  snapshot: ConfigFormSnapshot<ImageSettingsView>
-  t: CodexCapabilitySettingsProps['t']
-  unavailable: boolean
-  onError: (message: string | null) => void
-}): ReactNode {
-  const value = snapshot.value as ImageSettingsView
-  const disabled = !snapshot.writable || unavailable || !value.enabled
-  const write = writer(scope, onError, t)
-  const sizesId = useId()
-  const sizeHintId = useId()
-  const parametersHintId = useId()
-  const [sizeDraft, setSizeDraft] = useState<string>(value.size)
-  useEffect(() => { setSizeDraft(value.size) }, [value.size])
-  const saveSize = (): void => {
-    const size = sizeDraft.trim()
-    if (!isImageSize(size) || !supportsImageSize(value.model, size)) {
-      onError(t('invalidImageSize'))
-      return
-    }
-    if (size !== value.size) void write('size', size)
-    else onError(null)
-  }
-  return (
-    <div className={classes.formRows} data-dimmed={!value.enabled || unavailable}>
-      <Control label={t('imageModel')}>
-        <select aria-label={t('imageModel')} aria-describedby={parametersHintId} value={value.model} disabled={disabled} onChange={event => { void write('model', event.target.value) }}>
-          {!IMAGE_MODELS.some(model => model === value.model) && <option value={value.model}>{value.model}</option>}
-          {IMAGE_MODELS.map(model => <option key={model} value={model}>{model}</option>)}
-        </select>
-      </Control>
-      <p className={classes.imageHint} id={parametersHintId}>{t('imageParametersHint')}</p>
-      <Control label={t('defaultImageCount')}>
-        <select aria-label={t('defaultImageCount')} value={value.n} disabled={disabled} onChange={event => { void write('n', Number(event.target.value)) }}>
-          {Array.from({ length: 10 }, (_, index) => index + 1).map(count => <option key={count} value={count}>{count}</option>)}
-        </select>
-      </Control>
-      <Control label={t('defaultSize')}>
-        <input aria-label={t('defaultSize')} aria-describedby={sizeHintId} list={sizesId} value={sizeDraft} disabled={disabled}
-          onChange={event => { setSizeDraft(event.target.value) }} onBlur={saveSize}
-          onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); saveSize() } }} />
-        <datalist id={sizesId}>{IMAGE_SIZES.map(size => <option key={size} value={size} />)}</datalist>
-      </Control>
-      <p className={classes.imageHint} id={sizeHintId}>{t('imageSizeHint')}</p>
-      {!supportsImageSize(value.model, value.size) && <p className={classes.imageHint} role="alert">{t('invalidImageSize')}</p>}
-      <Control label={t('defaultQuality')}>
-        <select aria-label={t('defaultQuality')} value={value.quality} disabled={disabled} onChange={event => { void write('quality', event.target.value) }}>
-          <option value="auto">{t('automatic')}</option><option value="low">{t('low')}</option><option value="medium">{t('medium')}</option><option value="high">{t('high')}</option>
-          <option value="xhigh" disabled={!supportsImageQuality(value.model, 'xhigh')}>{t('xhigh')}</option>
-          <option value="max" disabled={!supportsImageQuality(value.model, 'max')}>{t('maxQuality')}</option>
-        </select>
-      </Control>
-      {!supportsImageQuality(value.model, value.quality) && <p className={classes.imageHint} role="alert">{t('invalidImageQuality')}</p>}
-      <Control label={t('defaultBackground')}>
-        <select aria-label={t('defaultBackground')} value={value.background} disabled={disabled} onChange={event => { void write('background', event.target.value) }}>
-          <option value="auto">{t('automatic')}</option><option value="opaque">{t('opaque')}</option><option value="transparent">{t('transparent')}</option>
-        </select>
       </Control>
     </div>
   )

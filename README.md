@@ -19,7 +19,7 @@ official **Codex CLI** (`~/.codex/auth.json`, or `$CODEX_HOME/auth.json`) for:
   model-facing `list_images` catalog;
 - resilient weekly Codex usage status;
 - one native **GPT Auth** Settings section with Login, LLM Context, Web Search,
-  and Image Creation cards; detailed Search/Image controls collapse into compact rows.
+  and Image Creation cards; detailed Web Search controls collapse into a compact row.
 
 > **⚠️ Unofficial channel — personal development only.** The private,
 > account-gated `chatgpt.com/backend-api` surface is unsupported, revocable, and
@@ -471,7 +471,7 @@ declare image input, and execution repeats the same route/model/auth/plan guard.
 A locally identified Free plan is marked unavailable. An unknown plan remains
 attemptable; the backend is authoritative.
 
-Live Image settings:
+Image defaults for Cordis configuration and tool calls:
 
 | Setting | Default | Values |
 |---|---:|---|
@@ -484,18 +484,15 @@ Live Image settings:
 
 GPT Image 2.5 uses the explicit IDs `gpt-image-2.5-sunburst` and
 `gpt-image-2.5-flare`. New configurations default to Sunburst; existing explicit
-model settings are preserved. The model field offers suggestions and still
-accepts custom IDs. Advanced quality and custom dimensions are enabled only
+model settings are preserved. The model field accepts custom IDs. Advanced quality and custom dimensions are enabled only
 for those two known 2.5 IDs; other IDs retain the existing parameter set.
 
 Custom dimensions must be multiples of 16, have an aspect ratio from 1:3 to
 3:1, use edges no larger than 3840, and contain 655,360–8,294,400 pixels.
-Above 2560×1440 is experimental. The settings field saves a valid size on blur
-or Enter; invalid input is not persisted. Deployment attachment limits still
-apply. See the [official image parameter guide](https://developers.openai.com/api/docs/guides/image-generation#size-and-quality-options).
+Above 2560×1440 is experimental. Deployment attachment limits apply. See the [official image parameter guide](https://developers.openai.com/api/docs/guides/image-generation#size-and-quality-options).
 
-The subscription endpoint treats the selected model, dimensions, quality, background, and count as requested values. On November 24, 2026, it returned an image for an unrecognized model ID and did not identify an effective model. Requests for 1024×1024 and 1024×1536 returned 1536×1024. A request for two images returned one. The gallery displays actual dimensions, and `IMAGE_SIZE_MISMATCH` reports requested and actual sizes when they differ.
-See [verification details](docs/gpt-image-2.5-compatibility.md).
+The subscription service chooses the model, quality and pixel dimensions. In live checks, it returned images for an unknown model ID, used low quality when high was requested, and returned one image when two were requested. Portrait, landscape and square descriptions produced matching aspect ratios with size and quality set to auto. A transparent background produced an alpha channel in both generation and editing.
+See [verification details](docs/gpt-image-2.5-compatibility.md#codex-subscription-checks-on-2026-11-24).
 
 A successful `generate_image` result displays only the plugin-owned image gallery;
 `list_images` is model-facing catalog state and has no user-facing result view. A
@@ -619,6 +616,6 @@ See [`docs/design.md`](docs/design.md) and the [architecture decisions](docs/adr
 
 - [L 站](https://linux.do/)
 
-Image failures distinguish moderation blocks, rejected requests, expired login, denied access, unavailable routes, and rate limits. Error cards use localized explanations; raw upstream response text is never copied into the conversation. Requests are never automatically retried. Choose Sunburst or Flare in the Image model dropdown under GPT Auth → Image Creation; Default size accepts WIDTHxHEIGHT and Default quality includes auto, low, medium, high, xhigh, and max. Existing custom model IDs remain selectable; new custom IDs can be configured through cordis.yml.
+Image failures distinguish moderation blocks, rejected requests, expired login, denied access, unavailable routes, and rate limits. Error cards use localized explanations. The plugin keeps raw upstream responses out of the conversation and leaves retries to the user. GPT Auth → Image Creation contains the enable switch.
 
-Generated images appear directly below the completed assistant reply, even when process details are collapsed. Edit image opens controls beside the selected image: model, resolution presets or custom dimensions, quality, and a description of the changes. Create image is available on the New Session screen and beside the active composer for generation from scratch. Add to message prepares the exact image reference and selected parameters in the visible conversation draft, preserving existing text. Review and send the message to start. These choices apply to one request without changing profile defaults. Actual output dimensions are shown below each image; failed generation details remain in the tool process view.
+Generated images appear directly below the completed assistant reply with their actual dimensions. Use **Create image** from the new-session screen or active composer, or **Edit image** beside an existing image. Describe the image or changes and enable **Transparent background** when needed. Include portrait, landscape or square composition in the description. **Add to message** appends your request and any image reference to the existing draft. Send the message to start.

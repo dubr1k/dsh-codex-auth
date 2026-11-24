@@ -170,28 +170,14 @@ describe('Codex Capability Bundle settings', () => {
     expect(first.set).not.toHaveBeenCalled()
   })
 
-  it('saves GPT Image 2.5 quality and custom dimensions while rejecting incomplete sizes', async () => {
+  it('shows only an enable switch for Image Creation even with saved image defaults', async () => {
     const image = fakeScope({ ...IMAGE, model: 'gpt-image-2.5-sunburst' })
     render(<CodexCapabilitySettings rpc={rpc(authStatus({ planType: 'plus' }))} t={t} subscribe={subscribe}
       llmScope={fakeScope(LLM).scope} searchScope={fakeScope(SEARCH).scope} imageScope={image.scope} />)
     await screen.findByText('Active')
-    fireEvent.click(screen.getByRole('button', { name: 'Expand Image Creation settings' }))
-    const modelOptions = (screen.getByRole('combobox', { name: 'Requested image model' }) as HTMLSelectElement).options
-    expect(Array.from(modelOptions ?? [], option => option.value)).toContain('gpt-image-2.5-flare')
-    fireEvent.change(screen.getByLabelText('Requested image model'), { target: { value: 'gpt-image-2.5-flare' } })
-    await waitFor(() => expect(image.set).toHaveBeenCalledWith('model', 'gpt-image-2.5-flare'))
-    fireEvent.change(screen.getByLabelText('Default quality'), { target: { value: 'max' } })
-    await waitFor(() => expect(image.set).toHaveBeenCalledWith('quality', 'max'))
-    const size = screen.getByLabelText('Default size')
-    fireEvent.change(size, { target: { value: '1536x' } })
-    fireEvent.blur(size)
-    expect(image.set).not.toHaveBeenCalledWith('size', expect.anything())
-    fireEvent.change(size, { target: { value: '1536x864' } })
-    fireEvent.blur(size)
-    await waitFor(() => expect(image.set).toHaveBeenCalledWith('size', '1536x864'))
-    fireEvent.change(screen.getByLabelText('Requested image model'), { target: { value: 'gpt-image-2' } })
-    await waitFor(() => expect(image.set).toHaveBeenCalledWith('model', 'gpt-image-2'))
-    expect((screen.getByRole('option', { name: 'Maximum' }) as HTMLOptionElement).disabled).toBe(true)
+    expect(screen.queryByRole('button', { name: /Image Creation settings/ })).toBeNull()
+    fireEvent.click(screen.getByLabelText('Enable Image Creation'))
+    await waitFor(() => expect(image.set).toHaveBeenCalledExactlyOnceWith('enabled', false))
   })
 
   it('renders Login, LLM Context, Search, and Image Creation as one live four-card section', async () => {
@@ -228,18 +214,12 @@ describe('Codex Capability Bundle settings', () => {
     await waitFor(() => expect(llm.set).toHaveBeenCalledWith('longContextEnabled', true))
 
     const expandSearch = screen.getByRole('button', { name: 'Expand Web Search settings' })
-    const expandImage = screen.getByRole('button', { name: 'Expand Image Creation settings' })
     expect(expandSearch.getAttribute('aria-expanded')).toBe('false')
-    expect(expandImage.getAttribute('aria-expanded')).toBe('false')
     fireEvent.click(expandSearch)
-    fireEvent.click(expandImage)
     expect(screen.getByRole('button', { name: 'Collapse Web Search settings' }).getAttribute('aria-expanded')).toBe('true')
-    expect(screen.getByRole('button', { name: 'Collapse Image Creation settings' }).getAttribute('aria-expanded')).toBe('true')
 
     fireEvent.change(screen.getByLabelText('Search mode'), { target: { value: 'cached' } })
     await waitFor(() => expect(search.set).toHaveBeenCalledWith('mode', 'cached'))
-    fireEvent.change(screen.getByLabelText('Default image count'), { target: { value: '3' } })
-    await waitFor(() => expect(image.set).toHaveBeenCalledWith('n', 3))
   })
 
   it('announces loading settings while keeping skeleton rows decorative', async () => {
@@ -256,7 +236,7 @@ describe('Codex Capability Bundle settings', () => {
     expect(screen.getAllByText('Loading settings…')).toHaveLength(3)
     const visibleBusyRegions = screen.getAllByRole('status')
       .filter(region => region.getAttribute('aria-busy') === 'true')
-    expect(visibleBusyRegions).toHaveLength(1)
+    expect(visibleBusyRegions).toHaveLength(2)
     expect(container.querySelectorAll('[aria-busy="true"]')).toHaveLength(3)
     expect(container.querySelectorAll('[aria-busy="true"] > div:not([aria-hidden="true"])')).toHaveLength(0)
   })

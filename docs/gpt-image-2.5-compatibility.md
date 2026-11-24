@@ -87,3 +87,18 @@ additional image or account network requests.
 The complete `pnpm run check` gate covers peers, lint, both typechecks, 323 tests,
 production builds, packed-artifact smoke checks, and publint. The compatibility
 report is included in the packed file list so the README link remains usable.
+
+## Codex subscription checks on 2026-11-24
+
+The requests below used one ChatGPT account, the Codex image routes, and a flat blue circle as the subject. Each parameter probe changed one value. The prompt probes used the same model, `size: auto`, `quality: auto`, and an opaque background. Width, height, and alpha came from the decoded images. Quality and count came from the response.
+
+| Probe | Observed result |
+| --- | --- |
+| `gpt-image-2`, Flare, and an unknown ID | HTTP 200 for each, with no effective model reported |
+| Size set to 1024×1024 or 1024×1536 | Both returned 1536×1024 |
+| Quality set to high or an invalid value | Both returned low, matching the low-quality baseline |
+| Count set to two | Returned one image |
+| Portrait, landscape, and square described in the prompt | Returned 1024×1536, 1536×1024, and 1254×1254 respectively |
+| Transparent background in generation and in an edit of the same reference | Both returned a PNG with transparent pixels. The opaque comparisons returned RGB PNGs |
+
+These results establish behavior for the tested account and requests. See the [Codex image tool source](https://github.com/openai/codex/blob/main/codex-rs/ext/image-generation/src/tool.rs) for the subscription client's automatic size and quality defaults and per-request background argument.
