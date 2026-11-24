@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4-rc.11]
+
+- Open the standard image menu from Codex thumbnails and original previews. Desktop can save the original to a chosen file. Web can download it.
+
 ## [0.3.4-rc.10]
 
 - Simplify subscription image creation and editing to a description and a transparent-background option. Specify the aspect ratio in the description and view actual dimensions in the gallery.

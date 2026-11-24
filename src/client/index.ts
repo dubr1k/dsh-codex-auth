@@ -152,7 +152,9 @@ function imageToolView(imageUrls: SessionImageUrls): (props: LocalizedToolViewPr
       [props.sessionId, imageUrls],
     )
     if ('kind' in props.block && !props.block.isError) return createElement(ListImagesToolView)
-    return createElement(CodexImageToolView, { block: props.block, loadImage, t: props.t })
+    return createElement(CodexImageToolView, {
+      block: props.block, loadImage, t: props.t, getTriggerProps: props.useContextMenu?.().getTriggerProps,
+    })
   }
 }
 
@@ -167,6 +169,6 @@ function ImageTurnTail(props: PropsRuntime<'conversation.chat.turnTail'> & Props
   const images = useSyncExternalStore(source.subscribe, source.getSnapshot, source.getSnapshot) ?? NO_IMAGES
   return createElement(CodexTurnImages, {
     images, loadImage: props.loadImage, t: props.t,
-    editImage: props.editImage,
+    editImage: props.editImage, getTriggerProps: props.useContextMenu?.().getTriggerProps,
   })
 }

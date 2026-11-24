@@ -1,5 +1,6 @@
 /** Minimal keyed view for one Image Creation tool call. */
 import type { ReactNode } from 'react'
+import type { ContextMenuBindings } from '@deepseek-ai/dsh-client-ui-context-menu/client'
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-chat/client'
 import { CodexImageGallery } from './CodexImageGallery.tsx'
 import type { CodexImageLabels, ImageLoader } from './CodexImageGallery.tsx'
@@ -9,11 +10,12 @@ import classes from './CodexImageToolView.module.css'
 export interface CodexImageToolViewProps {
   block: ToolCallBlock
   loadImage: ImageLoader
+  getTriggerProps?: ContextMenuBindings['getTriggerProps'] | undefined
   t?: (key: CodexAuthKey) => string
 }
 
 /** Successful calls render only their durable images; status copy appears only while running or on failure. */
-export function CodexImageToolView({ block, loadImage, t = english }: CodexImageToolViewProps): ReactNode {
+export function CodexImageToolView({ block, loadImage, getTriggerProps, t = english }: CodexImageToolViewProps): ReactNode {
   if (!('kind' in block)) {
     return <div className={classes.running}><span className={classes.pulse} aria-hidden="true" />{t('toolCreating')}</div>
   }
@@ -31,7 +33,7 @@ export function CodexImageToolView({ block, loadImage, t = english }: CodexImage
     : []).slice(0, 10)
   if (images.length === 0) return null
 
-  return <CodexImageGallery images={images} load={loadImage} labels={labels(t)} />
+  return <CodexImageGallery images={images} load={loadImage} getTriggerProps={getTriggerProps} labels={labels(t)} />
 }
 
 function labels(t: (key: CodexAuthKey) => string): CodexImageLabels {

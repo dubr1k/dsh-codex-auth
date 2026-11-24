@@ -1,7 +1,7 @@
 {
   "name": "dsh-codex-auth",
   "description": "One DeepSeek Harness Codex capability bundle for ChatGPT login, LLM access, Web Search, and durable Image Creation",
-  "version": "0.3.4-rc.10",
+  "version": "0.3.4-rc.11",
   "type": "module",
   "packageManager": "pnpm@11.28.5",
   "engines": {
@@ -125,6 +125,7 @@
     "@deepseek-ai/dsh-client-connection": "^0.2.2-rc.1 || 0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-locale": "^0.2.2-rc.1 || 0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-ui-chat": "^0.2.2-rc.1 || 0.2.3-alpha.2",
+    "@deepseek-ai/dsh-client-ui-context-menu": "^0.2.2-rc.1 || 0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-ui-conversation": "^0.2.2-rc.1 || 0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-ui-primitives": "^0.2.2-rc.1 || 0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-ui-renderer": "^0.2.2-rc.1 || 0.2.3-alpha.2",
@@ -150,6 +151,9 @@
     "react": "^18.2.0"
   },
   "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-client-ui-context-menu": {
+      "optional": true
+    },
     "@deepseek-ai/dsh-compaction": {
       "optional": true
     },
@@ -184,6 +188,7 @@
     "@deepseek-ai/dsh-client-locale": "0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-modules": "0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-ui-chat": "0.2.3-alpha.2",
+    "@deepseek-ai/dsh-client-ui-context-menu": "0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-ui-conversation": "0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-ui-primitives": "0.2.3-alpha.2",
     "@deepseek-ai/dsh-client-ui-renderer": "0.2.3-alpha.2",

@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
 import { CodexTurnImages, generatedImageDefinition } from '../src/client/CodexTurnImages.tsx'
@@ -19,6 +19,25 @@ describe('generated image turn artifacts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add to message' }))
     expect(edit).toHaveBeenCalledWith(image, expect.stringContaining('image:sha256:cat'))
     expect(edit).toHaveBeenCalledWith(image, expect.stringContaining('Blue cup'))
+  })
+
+  it('opens the stock image menu for the same original from the thumbnail and preview', async () => {
+    const openMenu = vi.fn()
+    const getTriggerProps = (target: object | undefined) => ({
+      onContextMenu: () => { if (target !== undefined) openMenu(target) },
+    })
+    render(<CodexTurnImages images={[image]} loadImage={async () => 'blob:cat'} editImage={() => false}
+      getTriggerProps={getTriggerProps} t={key => en[key]} />)
+    const thumbnail = await screen.findByRole('img', { name: 'cat.png' })
+    const target = { kind: 'image', value: { url: 'blob:cat', name: 'cat.png', mediaType: 'image/png' } }
+
+    fireEvent.contextMenu(thumbnail)
+    expect(openMenu).toHaveBeenNthCalledWith(1, target)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open original image: cat.png' }))
+    const preview = screen.getByRole('dialog', { name: 'Original image preview' })
+    fireEvent.contextMenu(within(preview).getByRole('img', { name: 'cat.png' }))
+    expect(openMenu).toHaveBeenNthCalledWith(2, target)
   })
 
   it('reports refusal to prepare a draft', () => {

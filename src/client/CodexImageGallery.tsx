@@ -1,7 +1,8 @@
 /** Self-contained durable-image gallery for Codex tool results. */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import { createPortal } from 'react-dom'
+import { ImageLightbox } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { ContextMenuBindings } from '@deepseek-ai/dsh-client-ui-context-menu/client'
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
 import classes from './CodexImageGallery.module.css'
 
@@ -23,10 +24,11 @@ interface GalleryImage {
 }
 
 /** Render durable images without depending on another client plugin's private module exports. */
-export function CodexImageGallery({ images, load, labels }: {
+export function CodexImageGallery({ images, load, labels, getTriggerProps }: {
   images: readonly GalleryImage[]
   load: ImageLoader
   labels: CodexImageLabels
+  getTriggerProps?: ContextMenuBindings['getTriggerProps'] | undefined
 }): ReactNode {
   if (images.length === 0) return null
   const variant = images.length === 1 ? 'single' : 'tile'
@@ -38,6 +40,7 @@ export function CodexImageGallery({ images, load, labels }: {
           attachment={image.attachment}
           load={load}
           labels={labels}
+          getTriggerProps={getTriggerProps}
           variant={variant}
         />
       ))}
@@ -50,10 +53,11 @@ type LoadState =
   | { kind: 'loaded'; src: string }
   | { kind: 'failed' }
 
-function CodexMessageImage({ attachment, load, labels, variant }: {
+function CodexMessageImage({ attachment, load, labels, variant, getTriggerProps }: {
   attachment: ImageAttachmentRef
   load: ImageLoader
   labels: CodexImageLabels
+  getTriggerProps?: ContextMenuBindings['getTriggerProps'] | undefined
   variant: 'single' | 'tile'
 }): ReactNode {
   const [attempt, setAttempt] = useState(0)
@@ -82,6 +86,10 @@ function CodexMessageImage({ attachment, load, labels, variant }: {
     )
   }
 
+  const menuProps = state.kind === 'loaded' ? getTriggerProps?.({
+    kind: 'image',
+    value: { url: state.src, name: label, mediaType: attachment.mediaType },
+  }) : undefined
   return (
     <>
       <button
@@ -91,6 +99,7 @@ function CodexMessageImage({ attachment, load, labels, variant }: {
         style={fit}
         title={labels.open}
         aria-label={labels.openNamed(label)}
+        {...menuProps}
         onClick={() => { if (state.kind === 'loaded') setOpen(true) }}
       >
         {state.kind === 'loading'
@@ -98,7 +107,7 @@ function CodexMessageImage({ attachment, load, labels, variant }: {
           : <img src={state.src} alt={label} style={fit === undefined ? undefined : { objectPosition: fit.objectPosition }} />}
       </button>
       {open && state.kind === 'loaded'
-        ? <CodexImageLightbox src={state.src} alt={label} labels={labels.lightbox} onClose={close} />
+        ? <ImageLightbox src={state.src} alt={label} labels={labels.lightbox} onClose={close} contextMenuProps={menuProps} />
         : null}
     </>
   )
@@ -129,36 +138,4 @@ function singleFit(attachment: ImageAttachmentRef): ImageFit {
 
 function positiveDimension(value: number): number {
   return Number.isFinite(value) && value > 0 ? value : 1
-}
-
-function CodexImageLightbox({ src, alt, labels, onClose }: {
-  src: string
-  alt: string
-  labels: CodexImageLabels['lightbox']
-  onClose: () => void
-}): ReactNode {
-  const closeRef = useRef<HTMLButtonElement>(null)
-  const restoreRef = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    restoreRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    closeRef.current?.focus()
-    const onKeyDown = (event: KeyboardEvent): void => { if (event.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKeyDown)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      restoreRef.current?.focus()
-    }
-  }, [onClose])
-
-  return createPortal(
-    <div className={classes.backdrop} role="dialog" aria-modal="true" aria-label={labels.dialog}>
-      <div className={classes.mask} aria-hidden="true" onMouseDown={onClose} />
-      <img className={classes.preview} src={src} alt={alt} />
-      <button ref={closeRef} className={classes.close} type="button" aria-label={labels.close} onClick={onClose}>
-        <span aria-hidden="true">×</span>
-      </button>
-    </div>,
-    document.body,
-  )
 }

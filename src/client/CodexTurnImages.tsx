@@ -1,5 +1,6 @@
 /** Completed-turn image artifacts, independent of process-detail disclosure. */
 import { useState } from 'react'
+import type { ContextMenuBindings } from '@deepseek-ai/dsh-client-ui-context-menu/client'
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
 import type { ConversationNodeDefinition } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { CodexImageGallery } from './CodexImageGallery.tsx'
@@ -72,9 +73,10 @@ function isImageReference(value: unknown): value is ImageAttachmentRef {
  * @param props Generated outputs, authorized loader, draft action and localized copy.
  * @returns Gallery with one edit action per image, or null for an empty turn.
  */
-export function CodexTurnImages({ images, loadImage, editImage, t }: {
+export function CodexTurnImages({ images, loadImage, editImage, getTriggerProps, t }: {
   images: readonly ImageAttachmentRef[]
   loadImage: ImageLoader
+  getTriggerProps?: ContextMenuBindings['getTriggerProps'] | undefined
   editImage: (image: ImageAttachmentRef, prompt: string) => boolean
   t: (key: CodexAuthKey) => string
 }) {
@@ -83,7 +85,7 @@ export function CodexTurnImages({ images, loadImage, editImage, t }: {
   return <div className={classes.artifacts}>
     {images.map(image => <div key={String(image.attachmentId)} className={classes.artifact}>
       <div className={classes.previewActions}>
-      <CodexImageGallery images={[{ attachment: image }]} load={loadImage} labels={{
+      <CodexImageGallery images={[{ attachment: image }]} load={loadImage} getTriggerProps={getTriggerProps} labels={{
         image: t('toolGeneratedImage'), open: t('toolOpenImage'),
         openNamed: label => `${t('toolOpenImage')}: ${label}`,
         loading: t('toolLoadingImage'), loadFailed: t('toolRetryImage'),
